@@ -1,6 +1,7 @@
 /* "readme" file, Last modified on 2012-12-04 */
 Histroy:
 2012-12-19: Add simple UDP socket support. But Server UDP support not implemented.
+2016-05-16: Add description of version 3.0.0
 
 
 ==================================================================================================
@@ -30,6 +31,11 @@ functions and file names more clear. The commonLib would not be changed too much
 tions happened in Andrew-designed user libraries. Most functions, library names, basic types,
 structures would be leaded with "AMC" prefix.
 
+3. Version 3.0.0
+    This version is update most of self-defined interfaces in AMCCommonLib from simple... into AMC....
+The reason I did this is because I wanted to create a lib used by myself. And "simple" seemed to be
+quite low ^_^.
+
 ==================================================================================================
 <<<< General discriptions >>>>
 
@@ -39,17 +45,15 @@ structures would be leaded with "AMC" prefix.
     1. laplacezhang@126.com
     2. zhangmin@tp-link.com.cn
 
-    This library tool contains six files below:
-    1. AMCCommonLib.h:	This file provide automatic "include" sentences by defining config macros. 
-						Also some simple library tools are declared here. 
-    2. AMCCommonLib.c: 	This file defines library tools declared in commonLib.h. Please do not in-
-						clude commonLib.h when you modify this file.
-    3. AMCConfigParser.h: 	This file provide simple tools to read configuration from config files. 
-    						The format should be in "XXX=YYY" format, or "XXX =YYY" or "XXX= YYY".
-    4. AMCConfigParser.c: 	This file is the detailed source of functions declared in configParser.h.
-    5. AMCSignalHandler.h: 	If you want to process with signal, please include this header.
-    6. AMCSignalHandler.c: 	This file contains signal process functions. It needs "-lpthread" option
-    						when linking.
+    This library tool contains files below:
+    1. AMCCommonLib.c/h:    This file provide automatic "include" sentences by defining config macros. 
+                            Also some simple library tools are declared here. 
+    2. AMCConfigParser.c/h: This file provide simple tools to read configuration from config files. 
+                            The format should be in "XXX=YYY" format, or "XXX =YYY" or "XXX= YYY".
+    3. AMCSignalHandler.c/h: If you want to process with signal, please include this header. This lib
+                            needs "-pthread" link option. But this lib is depreciated because it is
+                            better to process signal in async I/O libraries.
+    4. 
 
     Actually, the makefile "Makefile" and the script file "backup" also could be treated parts of 
 this library. The "Makefile", simply enough, acts as a common makefile for a tiny project. While

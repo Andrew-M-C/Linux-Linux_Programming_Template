@@ -27,7 +27,8 @@
 //#define _DEBUG_FLAG
 
 #ifdef _DEBUG_FLAG
-#define _DEBUG(fmt, args...)		printf("##"__FILE__", %d: "fmt"\n", __LINE__, ##args);
+extern ssize_t AMCPrintf(const char *format, ...);
+#define _DEBUG(fmt, args...)		AMCPrintf("<%s, %ld> "fmt, __FILE__, __LINE__, ##args)
 #else
 #define _DEBUG(fmt, args...)
 #endif
@@ -290,7 +291,8 @@ static struct AMCMemPool *_memPool_Create_WithLock(unsigned long unitSize, unsig
 		return NULL;
 	}
 
-	_DEBUG("[Pook 0x%08lx] Created", _ULONG_CVT(pool));
+	_DEBUG("[Pool 0x%08lx] Created, unit size %ld, init count %ld, grow count %ld", 
+		_ULONG_CVT(pool), pool->unitSize, pool->initUnitCount, pool->growUnitCount);
 	return pool;
 }
 
@@ -521,7 +523,7 @@ static struct AMCMemUnit *_memBlock_Alloc(struct AMCMemBlock *block, unsigned lo
 	retUnit->isAllocated = TRUE;
 	block->validUnitIdx = retUnit->nextUnitIdx;
 	block->freeUnitCount -= 1;
-	_DEBUG("[Block 0x%08lx] alloc unit 0x%08lx, index %ld", _ULONG_CVT(block), _ULONG_CVT(retUnit), freeIdx);
+	_DEBUG("[Block 0x%08lx] alloc unit 0x%08lx, index %ld, unit size %ld", _ULONG_CVT(block), _ULONG_CVT(retUnit), freeIdx, unitSize);
 	return retUnit;
 }
 
@@ -750,6 +752,37 @@ void AMCMemPool_DebugStdout(struct AMCMemPool *pool)
 
 	printf("total unit %ld, free unit %ld\n", totalUnitCount, freeUnitCount);
 #endif
+}
+
+
+unsigned long AMCMemPool_MemoryUsage(struct AMCMemPool *pool)
+{
+	if (NULL == pool) {
+		return 0;
+	}
+
+	unsigned long ret = 0;
+	struct AMCMemBlock *block = NULL; 
+
+	ret += sizeof(struct AMCMemPool);
+
+	_memPool_Lock(pool);		/* ---LOCK--- */
+
+	block = pool->pBlocks;
+	if (block) {
+		ret += sizeof(*block) + (pool->initUnitCount) * (pool->unitSize);
+		block = block->pNext;
+	}
+
+	while (block)
+	{
+		ret += sizeof(*block) + (pool->growUnitCount) * (pool->unitSize);
+		block = block->pNext;
+	}
+
+	_memPool_Unlock(pool);		/* --UNLOCK-- */
+
+	return ret;
 }
 
 

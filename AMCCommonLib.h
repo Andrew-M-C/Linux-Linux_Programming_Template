@@ -1,5 +1,5 @@
 /*******************************************************************************
-	Copyright (C), 2011-2014, Andrew Min Chang
+	Copyright (C), 2011-2016, Andrew Min Chang
 
 	File name: 	AMCCommonLib.h
 	Author:		Andrew Chang (Zhang Min) 
@@ -36,7 +36,7 @@
 						CFG_LIB_SYSTEM,
 						CFG_LIB_FIFO,
 						CFB_LIB_MINCORE,
-						CFG_LIB_SEMAPHORE,
+						CFG_LIB_SEM,
 						CFG_LIB_SHARED_MEM
 		2012-08-20: Add shared memory library; add message queue.
 		2012-08-21: Add socket library (local)
@@ -53,6 +53,9 @@
 		2014-09-18: Add CFG_LIB_INOTIFY and CFG_LIB_KQUEUE
 		2014-09-22: Add header <strings.h> in CFG_LIB_MEM
 		2014-09-22: Add CFG_LIB_DNS
+		2015-07-29: Add spinlock and POSIX semaphore.	
+		2015-10-19: Add poll(), epoll(), select() functions (CFG_LIB_SELECT)
+		2016-07-20: Add self defined daemon() functions and syslog lib (CFG_LIB_SYSLOG)
 
 --------------------------------------------------------------
 	Copyright information: 
@@ -65,7 +68,7 @@
 #ifndef	_AMC_COMMON_LIB
 #define	_AMC_COMMON_LIB
 
-#include "AMCDataTypes.h"
+#include <stdint.h>
 
 /* This is a common file */
 /* define operating system type */
@@ -96,7 +99,7 @@
  * software information
  */
 #define	CFG_SOFTWARE_NAME_STR		"(no name)"
-#define	CFG_SOFTWARE_DISCRIPT_STR	"An application to study binary search tree"
+#define	CFG_SOFTWARE_DISCRIPT_STR	"An application to contruct thread pool tool"
 #define	CFG_SOFTWARE_VER_STR		"0.0.1"
 #define	CFG_AUTHOR_STR		"Andrew Chang"
 
@@ -140,16 +143,21 @@
 
 
 #ifdef	DEBUG
+#ifndef CFG_LIB_STDOUT
+#define CFG_LIB_STDOUT
+#endif
 #define	DB(x)	x
-#define	TEST_VALUE(x)		AMCPrintf("##"__FILE__", %d: "#x" = 0x%x = %d\n", __LINE__, (unsigned int)x, x)
-#define	TEST_64B_VALUE(x)	AMCPrintf("##"__FILE__", %d: "#x" = 0x%Lx = %Ld\n", __LINE__, x, x)
-#define	TEST_CHAR(x)		AMCPrintf("##"__FILE__", %d: "#x" is '%c'\n", __LINE__, x)
-#define	TEST_STR(x)		AMCPrintf("##"__FILE__", %d: "#x" is \"%s\"\n", __LINE__, x)
-#define	TODO(x)			AMCPrintf("##"__FILE__", %d: TODO: %s\n",__LINE__, x)
-#define	MARK()		AMCPrintf("<<MARK>> "__FILE__", %d\n", __LINE__)
-#define	FUNC_MARK()	AMCPrintf("<<MARK>>"__FUNC__", %d\n", __LINE__)
+#define TEST_BIN(x)		AMCTestBinary(#x, &(x), sizeof(x))
+#define	TEST_VALUE(x)		AMCPrintf("##"__FILE__", %d: "#x" = 0x%x = %d", __LINE__, (unsigned int)x, x)
+#define	TEST_64B_VALUE(x)	AMCPrintf("##"__FILE__", %d: "#x" = 0x%Lx = %Ld", __LINE__, x, x)
+#define	TEST_CHAR(x)		AMCPrintf("##"__FILE__", %d: "#x" is '%c'", __LINE__, x)
+#define	TEST_STR(x)		AMCPrintf("##"__FILE__", %d: "#x" is \"%s\"", __LINE__, x)
+#define	TODO(x)			AMCPrintf("##"__FILE__", %d: TODO: %s",__LINE__, x)
+#define	MARK()		AMCPrintf("<<MARK>> "__FILE__", %d", __LINE__)
+#define	FUNC_MARK()	AMCPrintf("<<MARK>>"__FUNC__", %d", __LINE__)
 #else
 #define	DB(x)
+#define TEST_BIN(x)
 #define	TEST_VALUE(x)
 #define	TEST_64B_VALUE(x)
 #define	TEST_CHAR(x)
@@ -160,29 +168,21 @@
 #endif
 
 #ifdef DEBUG
-#define AMCLog(fmt, args...)	AMCPrintf("##"__FILE__", %d: "fmt, __LINE__, ##args)
+#define AMCLog(fmt, args...)	AMCPrintf("## "__FILE__", %d: "fmt, __LINE__, ##args)
 #else
 #define AMCLog(fmt, args...)	AMCPrintf(fmt, ##args)
 #endif
 
-
-#ifndef	FALSE
-#define	FALSE	(0)
-#define	TRUE	(!FALSE)
-#endif
-
-#ifndef	NULL
-#define	NULL	((void *)0)
-#endif
-
 //#if (OS_TYPE_LINUX == CFG_OS_TYPE)
-#ifndef	BOOL
-#define	BOOL	int
+#ifndef BOOL
+#define BOOL int
+#define FALSE 0
+#define TRUE (!(FALSE))
 #endif
 //#endif
 
-#ifndef	LENOF
-#define	LENOF(x)	(sizeof(x) / sizeof(*(x)))
+#ifndef	COUNTOF
+#define	COUNTOF(x)	(sizeof(x) / sizeof(*(x)))
 #endif
 
 #ifndef OFFSET_OF
@@ -193,22 +193,55 @@
 #endif
 #endif
 
+#ifndef UINT8
+#define UINT8	uint8_t
+#define INT8	int8_t
+#define UINT16	uint16_t
+#define INT16	int16_t
+#define UINT32	uint32_t
+#define INT32	int32_t
+#define UINT64	uint64_t
+#define INT64	int64_t
+#endif
+
+/* boolean judgement */
+#define	IS_TRUE(x)		(0 == (x))
+#define	IS_FALSE(x)		(0 != (x))
+#define	SET_TRUE(x)		((x) = 0)
+#define	SET_FALSE(x)	((x) = (-1))
+
+/* bit mask judgement */
+#define IS_ALL_BITS_SET(val, bits)	((bits) == ((val) & (bits)))
+#define IS_ANY_BITS_SET(val, bits)	(0 != ((val) & (bits)))
+#define IS_ALL_BITS_CLR(val, bits)	(!IS_ANY_BITS_SET(val, bits))
+#define IS_ANY_BITS_CLR(val, bits)	(!IS_ALL_BITS_SET(val, bits))
+#define SET_BITS(val, bits)	((val) |= (bits))
+#define CLR_BITS(val, bits)	((val) &= (~(bits)))
+
 
 #ifndef FORCED_TYPE_CONVERT_MACROS
 #define FORCED_TYPE_CONVERT_MACROS
-#define CHAR_CVRT(c)	((char)(c))
-#define UCHAR_CVRT(c)	((unsigned char)(c))
-#define SHORT_CVRT(s)	((short)(s))
-#define USHORT_CVRT(s)	((unsigned short)(s))
-#define INT_CVRT(i)		((int)(i))
-#define UINT_CVRT(i)	((unsigned int)(i))
-#define LONG_CVRT(l)	((long)(l))
-#define ULONG_CVRT(l)	((unsigned long)(l))
-#define LONG64_CVRT(ll)	((long long)(ll))
-#define ULONG64_CVRT(ll)	((unsigned long long){ll})
-#define SIZE_T_CVRT(s)	((size_t)(s))
-#define SSIZE_T_CVRT(s)	((ssize_t)(s))
-#define VOID_P_CVRT(p)	((void *)(p))
+#define TO_CHAR(c)     ((char)(c))
+#define TO_UCHAR(c)    ((unsigned char)(c))
+#define TO_SHORT(s)    ((short)(s))
+#define TO_USHORT(s)   ((unsigned short)(s))
+#define TO_INT(i)      ((int)(i))
+#define TO_UINT(i)     ((unsigned int)(i))
+#define TO_LONG(l)     ((long)(l))
+#define TO_ULONG(l)    ((unsigned long)(l))
+#define TO_LONG64(ll)  ((long long)(ll))
+#define TO_ULONG64(ll) ((unsigned long long){ll})
+#define TO_SIZE_T(s)   ((size_t)(s))
+#define TO_SSIZE(s)    ((ssize_t)(s))
+#define TO_VOID_P(p)   ((void *)(p))
+#define TO_UINT8(i)    ((uint8_t)(i))
+#define TO_INT8(i)     ((int8_t)(i))
+#define TO_UINT16(i)   ((uint16_t)(i))
+#define TO_INT16(i)    ((int16_t)(i))
+#define TO_UINT32(i)   ((uint32_t)(i))
+#define TO_INT32(i)    ((int32_t)(i))
+#define TO_UINT64(i)   ((uint64_t)(i))
+#define TO_INT64(i)    ((int64_t)(i))
 #endif
 
 
@@ -226,6 +259,7 @@
 #define	CFG_LIB_STRING
 #define	CFG_LIB_MEM
 #define	CFG_LIB_FILE
+#define CFG_LIB_DIR
 #define	CFG_LIB_DEVICE
 #define	CFG_LIB_ERRNO
 #define	CFG_LIB_GETOPT
@@ -243,7 +277,8 @@
 #define	CFG_LIB_SYSTEM
 #define	CFG_LIB_FIFO
 #define	CFB_LIB_MINCORE
-#define	CFG_LIB_SEMAPHORE
+#define	CFG_LIB_SEMAPHORE	// POSIX semaphore
+#define CFG_LIB_SEM			// XSI semaphore
 #define	CFG_LIB_SHARED_MEM
 #define	CFG_LIB_MSG_QUEUE
 #define	CFG_LIB_SOCKET
@@ -256,6 +291,8 @@
 #define CFG_LIB_INOTIFY
 #define CFG_LIB_KQUEUE
 #define CFG_LIB_DNS
+#define CFG_LIB_SELECT
+#define CFG_LIB_SYSLOG
 #endif
 
 
@@ -341,6 +378,7 @@ typedef pid_t pid_t;
 typedef pthread_t pthread_t;
 typedef pthread_attr_t pthread_attr_t;
 typedef pthread_mutex_t pthread_mutex_t;
+typedef pthread_spinlock_t pthread_spinlock_t;
 typedef pthread_mutexattr_t pthread_mutexattr_t;
 #define	PTHREAD_MUTEX_INITIALIZER	PTHREAD_MUTEX_INITIALIZER
 typedef pthread_cond_t pthread_cond_t;
@@ -351,6 +389,7 @@ typedef pthread_rwlockattr_t pthread_rwlockattr_t;
 #define PTHREAD_RWLOCK_INITIALIZER		PTHREAD_RWLOCK_INITIALIZER
 typedef sigset_t sigset_t;
 typedef mode_t mode_t;
+typedef sem_t sem_t;
 #endif
 
 /* general functions */
@@ -419,7 +458,9 @@ typedef enum {
 	PrintfOpt_Illegal
 } PrintfOpt_t;
 ssize_t AMCPrintf(const char *format, ...);
+ssize_t AMCPrintErr(const char *format, ...);
 int AMCPrintfSetOpt(PrintfOpt_t option);
+ssize_t AMCTestBinary(const char *valName, const void *pData, size_t dataLen);
 #endif
 
 
@@ -463,6 +504,8 @@ extern size_t strlen(const char *s);
 extern size_t strnlen(const char *s, size_t maxlen);
 extern int strcmp(const char *s1, const char *s2);
 extern int strncmp(const char *s1, const char *s2, size_t n);
+extern int strcasecmp(const char *s1, const char *s2);
+extern int strncasecmp(const char *s1, const char *s2, size_t n);
 extern char *strcat(char *dest, const char *src);
 extern char *strncat(char *dest, const char *src, size_t n);
 extern int toupper(int c);
@@ -471,10 +514,28 @@ extern size_t strspn(const char *s, const char *accept);
 extern size_t strcspn(const char *s, const char *reject);
 extern char *strstr(const char *haystack, const char *needle);
 extern char *strcasestr(const char *haystack, const char *needle);
+extern int isalnum(int c);
+extern int isalpha(int c);
+extern int isascii(int c);
+extern int isblank(int c);
+extern int iscntrl(int c);
+extern int isdigit(int c);
+extern int isgraph(int c);
+extern int islower(int c);
+extern int isprint(int c);
+extern int ispunct(int c);
+extern int isspace(int c);
+extern int isupper(int c);
+extern int isxdigit(int c);
 #endif
-void strnUpper(char *str, const size_t size);
-void strnLower(char *str, const size_t size);
-void printData(const void *data, const size_t size);
+void AMCStrUpper(char *str, const size_t size);
+void AMCStrLower(char *str, const size_t size);
+void AMCDataDump(const void *data, const size_t size);
+char *AMCStrCopy(char *dest, const char *src, size_t destSizeWith0);
+inline int AMCStrComp(const char *str1, const char *str2);
+inline int AMCStrCaseComp(const char *str1, const char *str2);
+inline size_t AMCStrLen(const char *str);
+char *AMCStrCat(char *dest, const char *src, size_t destSizeWith0);
 #endif
 
 
@@ -501,6 +562,9 @@ int bcmp(const void *s1, const void *s2, size_t n);
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <sys/vfs.h>
+#include <sys/statfs.h>
+#include <sys/statvfs.h>
 #ifdef	CFG_DECLARE_LIB_FUNC
 extern FILE *fopen(const char *path, const char *mode);
 extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
@@ -523,10 +587,44 @@ extern int ferror(FILE *stream);
 extern int symlink(const char *oldpath, const char *newpath);	/* soft link */
 extern int link(const char *oldpath, const char *newpath);		/* hard link */
 extern int unlink(const char *pathname);
+extern int access(const char *pathname, int mode);
+extern void clearerr(FILE *stream);
+extern int feof(FILE *stream);
+extern int ferror(FILE *stream);
+extern int fileno(FILE *stream);
+
+extern int statfs(const char *path, struct statfs *buf);
+extern int fstatfs(int fd, struct statfs *buf);
+extern int statvfs(const char *path, struct statvfs *buf);
+extern int fstatvfs(int fd, struct statvfs *buf);
 #endif
+int AMCDirGetCapacity(const char *path, uint64_t *pByteTotalOut, uint64_t *pByteUsedOut, uint64_t *pByteAvailOut);
+int AMCDirCreate(const char *dirPath);
 #ifndef	__STAT_T
 #define	__STAT_T
 typedef	struct stat stat_st;
+#endif
+#endif
+
+
+/* directory operation */
+#ifdef	CFG_LIB_DIR
+#include <sys/types.h>
+#include <dirent.h>
+#ifdef	CFG_DECLARE_LIB_FUNC
+extern DIR *opendir(const char *name);
+extern DIR *fdopendir(int fd);
+extern struct dirent *readdir(DIR *dirp);
+extern int readdir_r(DIR *dirp, struct dirent *entry, struct dirent **result);
+extern int closedir(DIR *dirp);
+#endif
+#ifndef __DIR_T
+#define __DIR_T
+typedef DIR dir_st;
+typedef struct dirent dirent_st;
+#endif
+#ifndef	CFG_LIB_FILE
+int AMCDirCreate(const char *dirPath);
 #endif
 #endif
 
@@ -546,7 +644,14 @@ extern int close(int fildes);
 extern int ioctl (int fildes, int cmd, ...);
 extern off_t lseek(int fildes, off_t offset, int whence);
 extern int stat(const char *path, struct stat *buf);
+extern int fcntl(int fd, int cmd, ... /* arg */ );
 #endif
+int AMCFdSetNonBlock(int fd);
+int AMCFdSetNonInheritance(int fd);
+int AMCFdCloseAll(void);
+int AMCFdDumpAll(void);
+ssize_t AMCFdGetAll(int *fdArrayOut, size_t arraySize);
+ssize_t AMCFdReadByLen(int fidles, void *buff, size_t nbytes);
 #ifndef	__STAT_T
 #define	__STAT_T
 typedef	struct stat stat_st;
@@ -614,7 +719,9 @@ typedef struct timezone timezone_st;
 extern time_t time(time_t *t);
 extern double difftime(time_t time1, time_t time0);
 extern struct tm *gmtime(const time_t *timep);
+extern struct tm *gmtime_r(const time_t *timep, struct tm *result);
 extern struct tm *localtime(const time_t *timep);
+extern struct tm *localtime_r(const time_t *timep, struct tm *result);
 extern time_t mktime(struct tm *tm);
 extern size_t strftime(char *s, size_t max, const char *format, const struct tm *tm);
 extern int gettimeofday(struct timeval *tv, struct timezone *tz);
@@ -636,8 +743,15 @@ time_t uptime(time_t *sec, int *mSec);
 #define	PID_FAIL	(-1)
 #ifdef	CFG_DECLARE_LIB_FUNC
 extern pid_t fork(void);
+extern pid_t vfork(void);
 extern pid_t wait(int *status);
 extern pid_t waitpid(pid_t pid, int *status, int options);
+extern int execl(const char *path, const char *arg, ...);
+extern int execlp(const char *file, const char *arg, ...);
+extern int execle(const char *path, const char *arg, ..., char * const envp[]);
+extern int execv(const char *path, char *const argv[]);
+extern int execvp(const char *file, char *const argv[]);
+extern int execve(const char *filename, char *const argv[], char *const envp[]);
 #endif
 #endif
 
@@ -657,7 +771,7 @@ extern pid_t getppid(void);
 #ifdef	CFG_LIB_SIGNAL
 #include <signal.h>
 typedef void (*sighandler_t)(int);
-typedef struct sigaction SIGACTION_st;
+typedef struct sigaction sigaction_st;
 //extern sighandler_t signal(int signum, sighandler_t handler);		/* not recommanded */
 int simpleSigaction(int signum, sighandler_t act);
 #ifdef	CFG_DECLARE_LIB_FUNC
@@ -684,7 +798,10 @@ extern int sigismember(const sigset_t *set, int signum);
 #ifdef	CFG_LIB_THREAD
 #include <pthread.h>
 #include <signal.h>
+#ifdef __TIMESPEC_ST
+#define __TIMESPEC_ST
 typedef struct timespec timespec_st;
+#endif
 int pthread_alive(pthread_t thread);
 inline int pthread_disableCancel(void);
 inline int pthread_enableCancel(void);
@@ -706,6 +823,12 @@ extern int pthread_mutex_lock(pthread_mutex_t *mutex);
 extern int pthread_mutex_trylock(pthread_mutex_t *mutex);
 extern int pthread_mutex_unlock(pthread_mutex_t *mutex);
 
+extern int pthread_spin_init(pthread_spinlock_t *lock, int pshared);
+extern int pthread_spin_destroy(pthread_spinlock_t *lock);
+extern int pthread_spin_lock(pthread_spinlock_t *lock);
+extern int pthread_spin_trylock(pthread_spinlock_t *lock);
+extern int pthread_spin_unlock(pthread_spinlock_t *lock);
+
 extern int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr);
 extern int pthread_cond_destroy(pthread_cond_t *cond);
 extern int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime);
@@ -722,7 +845,6 @@ extern int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock);
 extern int pthread_rwlock_unlock(pthread_rwlock_t *rwlock);
 #endif
 #endif
-
 
 /* random functions */
 #ifdef	CFG_LIB_RAND
@@ -792,9 +914,9 @@ extern int mincore(void *start, size_t length, unsigned char *vec);
 #endif
 
 
-/* semaphore */
+/* XSI semaphore */
 	/* In different Linux system, the definations may be various */
-#ifdef	CFG_LIB_SEMAPHORE
+#ifdef	CFG_LIB_SEM
 union semun{
 	int val;    /* Value for SETVAL */
 	struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
@@ -804,8 +926,11 @@ union semun{
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
-typedef struct sembuf SEMBUF_st;
-typedef struct timespec TIMESPEC_st;
+typedef struct sembuf sembuf_st;
+#ifndef __TIMESPEC_ST
+#define __TIMESPEC_ST
+typedef struct timespec timespec_st;
+#endif
 #ifdef	CFG_DECLARE_LIB_FUNC
 extern int semctl(int semid, int semnum, int cmd, ...);
 extern int semget(key_t key, int nsems, int semflg);
@@ -817,6 +942,30 @@ int simpleSemSet(int semId);
 int simpleSemDelete(int semId);
 int simpleSem_P(int semId);
 int simpleSem_V(int semId);
+#endif
+
+/* POSIX semaphore */
+#ifdef CFG_LIB_SEMAPHORE
+#include <fcntl.h>           /* For O_* constants */
+#include <sys/stat.h>        /* For mode constants */
+#include <semaphore.h>
+#ifndef __TIMESPEC_ST
+#define __TIMESPEC_ST
+typedef struct timespec timespec_st;
+#endif
+#ifdef	CFG_DECLARE_LIB_FUNC
+extern sem_t *sem_open(const char *name, int oflag);
+//extern sem_t *sem_open(const char *name, int oflag, mode_t mode, unsigned int value);
+extern int sem_close(sem_t *sem);
+extern int sem_destroy(sem_t *sem);
+extern int sem_getvalue(sem_t *sem, int *sval);
+extern int sem_init(sem_t *sem, int pshared, unsigned int value);
+extern int sem_post(sem_t *sem);
+extern int sem_wait(sem_t *sem);
+extern int sem_trywait(sem_t *sem);
+extern int sem_timedwait(sem_t *sem, const struct timespec *abs_timeout);
+extern int sem_unlink(const char *name);
+#endif
 #endif
 
 
@@ -874,6 +1023,8 @@ ssize_t simpleMsqRecv(int msqId, long int *pMsgType, void * pMsg, size_t size, i
 #include <sys/un.h>		/* AF_UNIX */
 #include <netinet/in.h>		/* AF_INET */
 #include <arpa/inet.h>
+/* uint64_t */
+#include <stdint.h>
 typedef struct sockaddr sockaddr_st;
 typedef struct sockaddr_un sockaddr_un_st;
 typedef struct sockaddr_in sockaddr_in_st;
@@ -930,35 +1081,39 @@ extern ssize_t recvfrom(int s, void *buf, size_t len, int flags,struct sockaddr 
 extern int getsockopt(int s, int level, int optname, void *optval, socklen_t *optlen);
 extern int setsockopt(int s, int level, int optname, const void *optval, socklen_t optlen);
 #endif
-unsigned int simpleSocketErrLine(void);		// used when a function contains mutiple system call
-int simpleSocketCreate_local(void);
-int simpleSocketCreate_tcp(void);
-int simpleSocketCreate_udp(void);
-int simpleSocketName_local(int socketId, char *socketName);
-int simpleSocketName_tcp(int socketId, const char *serverIpAddr, int port);
-int simpleSocketListen(int socketId, int pendingLimit);
-int simpleSocketAccept_local(int socketId, const char *socketName, int isNoWait);
-int simpleSocketAccept_internet(int socketId, const char *serverIpAddr, int port, int isNoWait);
-int simpleSocketConnect_local(int socketId, char *socketName);
-int simpleSocketConnect_internet(int socketId, const char *serverIpAddr, int port, const struct timeval *timeout);
-int simpleSocketBind_udp(int socketId, int portFrom);
-int simpleSocketBind_tcp(int socketId, int portFrom);
-ssize_t simpleSocketWrite_tcp(int socketId, const void *data, size_t dataLen);
-ssize_t simpleSocketRead_tcp(int socketId, void *dataRead, size_t dataReadLimit, const struct timeval *timeout);
-ssize_t simpleSocketSendto_udp
+unsigned int AMCSocketErrLine(void);		// used when a function contains mutiple system call
+int AMCSocketCreate_local(void);
+int AMCSocketCreate_tcp(void);
+int AMCSocketCreate_udp(void);
+int AMCSocketName_local(int socketId, const char *socketName);
+int AMCSocketName_tcp(int socketId, const char *serverIpAddr, int port);
+int AMCSocketListen(int socketId, int pendingLimit);
+int AMCSocketAccept_local(int socketId, const char *socketName, int isNoWait);
+int AMCSocketAccept_internet(int socketId, const char *serverIpAddr, int port, int isNoWait);
+int AMCSocketConnect_local(int socketId, const char *socketName);
+int AMCSocketConnect_internet(int socketId, const char *serverIpAddr, int port, const struct timeval *timeout);
+int AMCSocketBind_udp(int socketId, int portFrom);
+int AMCSocketBind_tcp(int socketId, int portFrom);
+ssize_t AMCSocketWrite_tcp(int socketId, const void *data, size_t dataLen);
+ssize_t AMCSocketRead_tcp(int socketId, void *dataRead, size_t dataReadLimit, const struct timeval *timeout);
+ssize_t AMCSocketSendto_udp
 							(int socketId, 
 							const char *targetIPAddr, 
 							int port, 
 							const void *data, 
 							size_t dataLen);
-ssize_t simpleSocketReceiveFrom_udp
+ssize_t AMCSocketReceiveFrom_udp
 							(int socketId, 
 							const char *sourceIpAddr, 
 							struct sockaddr_in *srcAddress,
 							void *dataRead, 
 							size_t dataReadLimit, 
 							const struct timeval *timeout);
-int simpleSocketClose(int socketId);
+int AMCSocketClose(int socketId);
+
+BOOL AMCStringIsValidIPv4(const char *string, uint32_t *pIpNumOut);
+BOOL AMCStringIsValidMAC(const char *string, uint64_t *pMacNumOut);
+BOOL AMCIpAddressesAreAtTheSameSubnet(const char *ipA, const char *ipB, const char *subnetMask);
 #endif
 
 
@@ -1002,7 +1157,7 @@ extern int getifaddrs(struct ifaddrs **ifap);
 extern void freeifaddrs(struct ifaddrs *ifa);
 #endif
 typedef struct ifaddrs ifaddrs_st;
-BOOL isSystemBigEndian();
+BOOL AMCSysIsBigEndian(void);
 #if defined(__APPLE__) && defined(__MACH__)
 #else
 uint64_t htonll(uint64_t hostlonglong);
@@ -1013,6 +1168,7 @@ size_t ifaddrsGetAllIPv4(const struct ifaddrs *ifa,
                            struct in_addr *maskBuffer,
                            size_t bufferCountMax);
 void inet_n4top(struct in_addr addr, char* str, size_t strLenLimit);
+void inet_n6top(struct in6_addr addr, char* str, size_t strLenLimit);
 char *sock_ntop(const struct sockaddr *sa, socklen_t salen);
 #endif
 
@@ -1095,8 +1251,16 @@ extern long double ceill(long double x);
 /* run in the background */
 #ifdef	CFG_LIB_DAEMON
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #ifdef	CFG_DECLARE_LIB_FUNC
 extern int daemon(int nochdir, int noclose);
+#endif
+mode_t AMCAppUnmask(void);
+int AMCAppDaemonize(BOOL shouldCloseTerminal);
+BOOL AMCAppAlreadyRunning(const char *pidDir, const char *pidFileName, int *pDuplicatePidOut);
+#ifndef CFG_LIB_DEVICE
+int AMCFdCloseAll(void);
 #endif
 #endif
 
@@ -1214,7 +1378,61 @@ extern int getaddrinfo(const char *node, const char *service, const struct addri
 extern void freeaddrinfo(struct addrinfo *res);
 extern const char *gai_strerror(int errcode);
 #endif
+int AMCDnsGetAddrinfo(const char *url, const char *protocol, struct addrinfo **pResultOut);
+void AMCDnsFreeAddrinfo(struct addrinfo *info);
+void AMCDnsDumpAddrinfo(const struct addrinfo *pAddrinfo);
 #endif
+
+
+#ifdef CFG_LIB_SELECT
+/******/
+/* select() for all */
+/* According to POSIX.1-2001 */
+#include <sys/select.h>
+/* According to earlier standards */
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/select.h>
+#ifdef	CFG_DECLARE_LIB_FUNC
+extern int  select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout);
+extern void FD_CLR(int fd, fd_set *set);
+extern int  FD_ISSET(int fd, fd_set *set);
+extern void FD_SET(int fd, fd_set *set);
+extern void FD_ZERO(fd_set *set);
+extern int  pselect(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, const struct timespec *timeout, const sigset_t *sigmask);
+#endif
+/******/
+/* poll() for Linux */
+#if	(CFG_OS_TYPE==OS_TYPE_LINUX)
+#include <poll.h>
+ #ifdef	CFG_DECLARE_LIB_FUNC
+extern int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+ #endif
+#endif
+/******/
+/* epoll() for Linux */
+#if	(CFG_OS_TYPE==OS_TYPE_LINUX)
+#include <sys/epoll.h>
+ #ifdef	CFG_DECLARE_LIB_FUNC
+extern int epoll_create(int size);
+extern int epoll_ctl(int epfd, int op, struct epoll_event *event);
+ #endif
+#endif
+
+#endif	/* endof CFG_LIB_SELECT */
+
+
+#ifdef CFG_LIB_SYSLOG
+#include <syslog.h>
+#include <stdarg.h>
+#ifdef	CFG_DECLARE_LIB_FUNC
+void openlog(const char *ident, int option, int facility);
+void syslog(int priority, const char *format, ...);
+void closelog(void);
+void vsyslog(int priority, const char *format, va_list ap);
+#endif
+#endif	/* endof CFG_LIB_SYSLOG */
 
 
 #endif	/* end of file */

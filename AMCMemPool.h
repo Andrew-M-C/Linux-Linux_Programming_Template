@@ -50,5 +50,7 @@ inline unsigned long AMCMemPool_UnitSizeForPool(struct AMCMemPool *pool);
 
 void AMCMemPool_DebugStdout(struct AMCMemPool *pool);
 
+unsigned long AMCMemPool_MemoryUsage(struct AMCMemPool *pool);
+
 
 #endif	/* EOF */

@@ -1,7 +1,7 @@
 /*******************************************************************************
-	Copyright (C), 2011-2012, Andrew Min Chang
+	Copyright (C), 2011-2016, Andrew Min Chang
 
-	File name: 	AMCCommonLib.h
+	File name: 	AMCCommonLib.c
 	Author:		Andrew Chang (Zhang Min) 
 	
 	Description: 	
@@ -19,7 +19,9 @@
 		2012-12-04: Add client UDP support in AMC socket library
 		2013-01-05: Add OS X support in uptime() function
 		2013-01-21: Add support of simple timer setting
-		2013-06-13: Add simpleSocketWrite_tcp() and simpleSocketRead_tcp();
+		2013-06-13: Add simpleSocketWrite_tcp() and simpleSocketRead_tcp()
+		2016-05-03: Add directory read tool
+		2016-05-05: Change simpleSocket... to AMCSocket...
 
 --------------------------------------------------------------
 	Copyright information: 
@@ -30,7 +32,8 @@
 ********************************************************************************/
 
 /* This is a common file */
-#include "AMCDataTypes.h"
+#define CFG_LIB_ALL
+#include "AMCCommonLib.h"
 
 /* define operating system type */
 #define	OS_TYPE_LINUX			0
@@ -55,25 +58,22 @@
 #define	CFG_OS_TYPE		OS_TYPE_LINUX
 #endif
 
-
-
-
-//#define	COMM_LIB_DEBUG
+#define	COMM_LIB_DEBUG
 
 #ifdef	COMM_LIB_DEBUG
-#define	DB(x)	x
-#define	TEST_VALUE(x)		printf("##"__FILE__", %d: "#x" = 0x%x = %d\n", __LINE__, (unsigned int)x, x)
-#define	TEST_64B_VALUE(x)	printf("##"__FILE__", %d: "#x" = 0x%Lx = %Ld\n", __LINE__, x, x)
-#define	TEST_CHAR(x)		printf("##"__FILE__", %d: "#x" is '%c'\n", __LINE__, x)
-#define	TEST_STR(x)		printf("##"__FILE__", %d: "#x" is \"%s\"\n", __LINE__, x)
-#define	TODO(x)			printf("##"__FILE__", %d: TODO: %s\n",__LINE__, x)
+#define	_DB(x)	x
+#define	_TEST_VALUE(x)		printf("##"__FILE__", %d: "#x" = 0x%x = %d\n", __LINE__, (unsigned int)x, x)
+#define	_TEST_64B_VALUE(x)	printf("##"__FILE__", %d: "#x" = 0x%Lx = %Ld\n", __LINE__, x, x)
+#define	_TEST_CHAR(x)		printf("##"__FILE__", %d: "#x" is '%c'\n", __LINE__, x)
+#define	_TEST_STR(x)		printf("##"__FILE__", %d: "#x" is \"%s\"\n", __LINE__, x)
+#define	_TODO(x)			printf("##"__FILE__", %d: _TODO: %s\n",__LINE__, x)
 #else
-#define	DB(x)
-#define	TEST_VALUE(x)
-#define	TEST_64B_VALUE(x)
-#define	TEST_CHAR(x)
-#define	TEST_STR(x)
-#define	TODO(x)			printf("!!!"__FILE__" %d TODO: %s\n", x)
+#define	_DB(x)
+#define	_TEST_VALUE(x)
+#define	_TEST_64B_VALUE(x)
+#define	_TEST_CHAR(x)
+#define	_TEST_STR(x)
+#define	_TODO(x)			printf("!!!"__FILE__" %d _TODO: %s\n", x)
 #endif
 
 
@@ -119,6 +119,7 @@ ssize_t errPrintf(const char *format, ...)
 #include <sys/time.h>
 ssize_t AMCPrintf(const char *format, ...)
 {
+#if 0
 	char buff[CFG_MAC_AMC_PRINT_SIZE];
 	va_list vaList;
 	size_t dateLen;
@@ -142,7 +143,65 @@ ssize_t AMCPrintf(const char *format, ...)
 	buff[dateLen + 1] = '\0';
 
 	return (write(1, buff, dateLen + 1));
+#else
+	char buff[CFG_MAC_AMC_PRINT_SIZE];
+	va_list vaList;
+	size_t dateLen = 0;
+	
+	tzset();
+	time_t currSec = time(0);
+	struct tm currTime;
+	struct tm *pTime = localtime(&currSec);
+	struct timeval currDayTime;
+
+	gettimeofday(&currDayTime, NULL);
+	if (pTime)
+	{
+		memcpy(&currTime, pTime, sizeof(currTime));
+		dateLen = sprintf(buff, "%04d-%02d-%02d,%02d:%02d:%02d.%06ld ", 
+							currTime.tm_year + 1900, currTime.tm_mon + 1, currTime.tm_mday,
+							currTime.tm_hour, currTime.tm_min, currTime.tm_sec, currDayTime.tv_usec);
+	}
+
+	va_start(vaList, format);
+	vsnprintf((char *)(buff + dateLen), sizeof(buff) - dateLen - 1, format, vaList);
+	va_end(vaList);
+
+	dateLen = strlen(buff);
+	buff[dateLen + 0] = '\n';
+	buff[dateLen + 1] = '\0';
+
+	return (write(1, buff, dateLen + 1));
+#endif
 }
+
+ssize_t AMCPrintErr(const char *format, ...)
+{
+	char buff[CFG_MAC_AMC_PRINT_SIZE];
+	va_list vaList;
+	size_t dateLen;
+	time_t currTime = time(0);
+	struct timeval currDayTime;
+
+	gettimeofday(&currDayTime, NULL);
+	dateLen = strftime(buff, CFG_MAC_AMC_PRINT_SIZE-1, "%F,%02H:%02M:%02S", localtime(&currTime));
+	sprintf(buff + dateLen, ".%06ld", currDayTime.tv_usec);
+	dateLen += 7;
+	buff[dateLen - 3] = ' ';
+	buff[dateLen - 2] = '\0';
+	dateLen -= 2;
+
+	va_start(vaList, format);
+	vsnprintf((char *)(buff + dateLen), sizeof(buff) - dateLen - 1, format, vaList);
+	va_end(vaList);
+
+	dateLen = strlen(buff);
+	buff[dateLen + 0] = '\n';
+	buff[dateLen + 1] = '\0';
+
+	return (write(2, buff, dateLen + 1));
+}
+
 
 
 static const char *_printfOptStr[] ={
@@ -188,7 +247,7 @@ static const char *_printfOptStr[] ={
 	"\033[8m"
 };
 
-int AMCPrintfSetOpt(int option)
+int AMCPrintfSetOpt(PrintfOpt_t option)
 {
 	static unsigned int arraySize = 0;
 
@@ -203,9 +262,126 @@ int AMCPrintfSetOpt(int option)
 	}
 	else
 	{
-		return printf(_printfOptStr[option]);
+		return printf("%s", _printfOptStr[option]);
 	}
 }
+
+
+ssize_t AMCTestBinary(const char *valName, const void *pData, size_t dataLen)
+{
+	char outBuff[128];
+	char *pCurr = outBuff;
+	uint64_t u64data = 0;
+	size_t tmp;
+
+	/* check input data */
+	if (NULL == pData)
+	{
+		AMCPrintErr("Unknown input data %s", valName ? valName : "");
+		return -1;
+	}
+
+	/* check data length */
+	if (4 == dataLen)		// most common
+	{
+		uint32_t *pU32data = (uint32_t*)pData;
+		u64data = (uint64_t)(*pU32data);
+	}
+	else if (1 == dataLen)
+	{
+		uint8_t *pU8data = (uint8_t *)pData;
+		u64data = (uint64_t)(*pU8data);
+	}
+	else if (8 == dataLen)
+	{
+		uint64_t *pU64data = (uint64_t *)pData;
+		u64data= (uint64_t)(*pU64data);
+	}
+	else if (2 == dataLen)
+	{
+		uint16_t *pU16data = (uint16_t *)pData;
+		u64data = (uint32_t)(*pU16data);
+	}
+	else
+	{
+		if (valName) {
+			AMCPrintErr("Unsupport length %d for %s", dataLen, valName);
+		}
+		else {
+			AMCPrintErr("Unsupport length %d", dataLen);
+		}
+		return -1;
+	}
+
+	/* print data: */
+	if (valName) {
+		pCurr += sprintf(pCurr, "Binary information for \"%s\": ", valName);
+	}
+	else {
+		pCurr += sprintf(pCurr, "Binary information: ");
+	}
+
+	for (tmp = dataLen * 8; tmp > 0; tmp--)
+	{
+		if (u64data & (1 << (tmp - 1))) {
+			*pCurr = '1';
+		}
+		else {
+			*pCurr = '0';
+		}
+		
+		*(pCurr + 1) = '\0';
+		pCurr ++;
+
+		if (0 == ((tmp-1) & 0x7))
+		{
+			*pCurr = ' ';
+			*(pCurr + 1) = '\0';
+			pCurr ++;
+		}
+	}
+	
+	return AMCPrintf("%s", outBuff);
+}
+
+
+#include <sys/statvfs.h>
+int AMCDirGetCapacity(const char *path, uint64_t *pByteTotalOut, uint64_t *pByteUsedOut, uint64_t *pByteAvailOut)
+{
+	struct statvfs fsvstat;
+	int ret = statvfs(path, &fsvstat);
+
+	if (0 == ret)
+	{
+		uint64_t total = ((uint64_t)(fsvstat.f_frsize)) * ((uint64_t)(fsvstat.f_blocks));
+	
+		if (pByteTotalOut) {
+			*pByteTotalOut = total;
+		}
+		if (pByteUsedOut) {
+			*pByteUsedOut = total - ((uint64_t)(fsvstat.f_frsize)) * ((uint64_t)(fsvstat.f_bfree));
+		}
+		if (pByteAvailOut) {
+			*pByteAvailOut = ((uint64_t)(fsvstat.f_frsize)) * ((uint64_t)(fsvstat.f_bavail));
+		}
+	}
+
+	return ret;
+}
+
+
+int AMCDirCreate(const char *dirPath)
+{
+	if (NULL == dirPath)
+	{
+		return -1;
+	}
+	else
+	{
+		return mkdir(dirPath, S_IRWXU | S_IRWXG);
+	}
+}
+
 
 /* headers included in errPrintf */
 #define	COMMAND_LEN		(256)
@@ -242,7 +418,7 @@ static int systemEx(char *command)
 		return 0;
 	}
 
-	pid = fork();
+	pid = vfork();
 	if (pid < 0)
 	{
 		return -1;
@@ -281,6 +457,247 @@ static int systemEx(char *command)
 	} while (1);
 
 	return 0;
+}
+
+
+#include <unistd.h>
+#include <fcntl.h>
+int AMCFdSetNonBlock(int fd)
+{
+	int flag = fcntl(fd, F_GETFL, 0);
+	if (flag >= 0)
+	{
+		return fcntl(fd, F_SETFL, flag | O_NONBLOCK);
+	}
+	else
+	{
+		return flag;
+	}
+}
+
+int AMCFdSetNonInheritance(int fd)
+{
+	int flag = fcntl(fd, F_GETFD, 0);
+	if (flag >= 0)
+	{
+		return fcntl(fd, F_SETFD, flag | FD_CLOEXEC);
+	}
+	else
+	{
+		return flag;
+	}
+}
+
+#include <ctype.h>
+int _isStrAllDigit(char* str)
+{
+	while(*str)
+	{
+		if (isdigit(*str)){
+			str ++;
+		}
+		else {
+			return 0;
+		}
+	}
+	return 1;
+}
+
+#include <dirent.h>
+int AMCFdCloseAll(void)
+{
+	DIR *pDir = NULL;
+	struct dirent *pEntry = NULL;
+	char procPath[32];
+	pid_t selfPid = getpid();
+	int fdNum, fdDir;
+	snprintf(procPath, sizeof(procPath), "/proc/%d/fd", selfPid);
+
+	pDir = opendir(procPath);
+	if (pDir)
+	{
+		fdDir = *((int*)pDir);
+	
+		pEntry = readdir(pDir);
+		while(pEntry)
+		{
+			if (_isStrAllDigit(pEntry->d_name))
+			{
+				fdNum = (int)strtol(pEntry->d_name, NULL, 10);
+				if (fdNum == fdDir)
+				{
+					/* current used dir fd is ignored. */
+				}
+				else if (fdNum > 2)
+				{
+					close(fdNum);
+				}
+				else
+				{
+					/* stdin, stdout, stderr are ignored */
+				}
+			}
+			else
+			{
+				/* not a fd */
+			}
+		
+			pEntry = readdir(pDir);
+		}
+
+		return closedir(pDir);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int AMCFdDumpAll(void)
+{
+	DIR *pDir = NULL;
+	struct dirent *pEntry = NULL;
+	char procPath[32];
+	pid_t selfPid = getpid();
+	int fdNum, fdDir;
+	int fdCount = 0;
+	snprintf(procPath, sizeof(procPath), "/proc/%d/fd", selfPid);
+
+	pDir = opendir(procPath);
+	if (pDir)
+	{
+		fdDir = *((int*)pDir);
+	
+		pEntry = readdir(pDir);
+		while(pEntry)
+		{
+			if (_isStrAllDigit(pEntry->d_name))
+			{
+				fdNum = (int)strtol(pEntry->d_name, NULL, 10);
+				if (fdNum == fdDir)
+				{
+					/* current used dir fd is ignored. */
+				}
+				else
+				{
+					if (fdCount)
+					{
+						printf(", %d", fdNum);
+					}
+					else
+					{
+						printf("%d", fdNum);
+					}
+					fdCount ++;
+				}
+			}
+			else
+			{
+				/* not a fd */
+			}
+		
+			pEntry = readdir(pDir);
+		}
+
+		return closedir(pDir);
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+ssize_t AMCFdGetAll(int *fdArrayOut, size_t arraySize)
+{
+	ssize_t ret = 0;
+	DIR *pDir = NULL;
+	struct dirent *pEntry = NULL;
+	char procPath[32];
+	pid_t selfPid = getpid();
+	int fdNum, fdDir;
+	snprintf(procPath, sizeof(procPath), "/proc/%d/fd", selfPid);
+
+	if (arraySize && (NULL == fdArrayOut))
+	{
+		return -1;
+	}
+
+	pDir = opendir(procPath);
+	if (pDir)
+	{
+		fdDir = *((int*)pDir);
+	
+		pEntry = readdir(pDir);
+		while(pEntry)
+		{
+			if (_isStrAllDigit(pEntry->d_name))
+			{
+				fdNum = (int)strtol(pEntry->d_name, NULL, 10);
+				if (fdNum == fdDir)
+				{
+					/* current used dir fd is ignored. */
+				}
+				else
+				{
+					ret ++;
+					if (ret <= arraySize)
+					{
+						fdArrayOut[ret - 1] = fdNum;
+					}
+				}
+			}
+			else
+			{
+				/* not a fd */
+			}
+		
+			pEntry = readdir(pDir);
+		}
+
+		closedir(pDir);
+		return ret;
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
+ssize_t AMCFdReadByLen(int fidles, void *buff, size_t nbytes)
+{
+	unsigned char *readBuff = (unsigned char *)buff;
+	ssize_t readLen = -1;
+	ssize_t ret = 0;
+
+	if ((NULL == buff)
+		|| (fidles < 0)
+		|| ((ssize_t)nbytes < 0))
+	{
+		ret = -1;
+		errno = EINVAL;
+		goto ENDS;
+	}
+
+	readLen = read(fidles, readBuff + ret, nbytes - ret);
+	while (readLen > 0)
+	{
+		ret += readLen;
+		
+		if (nbytes - ret > 0) {
+			readLen = read(fidles, readBuff + ret, nbytes - ret);
+		}
+		else {
+			break;
+		}
+	}
+
+
+	if (ret <= 0) {
+		ret = -1;
+	}
+ENDS:
+	return ret;
 }
 
 
@@ -330,7 +747,6 @@ int randInt(int minInt, int maxInt)
 /* a package of sigaction() */
 #include <signal.h>
 #include <errno.h>
-typedef void (*sighandler_t)(int);
 int simpleSigaction(int signum, sighandler_t act)
 {
 	struct sigaction sigConf = {};
@@ -485,7 +901,7 @@ int simpleMknod(const char *pathname, mode_t mode)
 
 
 /* string upper */
-void strnUpper(char *str, const size_t size)
+void AMCStrUpper(char *str, const size_t size)
 {
 	int tmp;
 	for (tmp = 0; (tmp < size) && ('\0' != str[tmp]); tmp++)
@@ -499,7 +915,7 @@ void strnUpper(char *str, const size_t size)
 
 
 /* string lower */
-void strnLower(char *str, const size_t size)
+void AMCStrLower(char *str, const size_t size)
 {
 	int tmp;
 	for (tmp = 0; (tmp < size) && ('\0' != str[tmp]); tmp++)
@@ -537,7 +953,7 @@ static char _charFromByte(uint8_t byte)
 	}
 }
 
-void printData(const void *pData, const size_t size)
+void AMCDataDump(const void *pData, const size_t size)
 {
 	size_t column, tmp;
 	char lineString[64] = "";
@@ -641,17 +1057,79 @@ void printData(const void *pData, const size_t size)
 }
 
 
+char *AMCStrCopy(char *dest, const char *src, size_t destSizeWith0)
+{
+	if ((NULL == dest)
+		|| (NULL == src))
+	{
+		return NULL;
+	}
+
+	ssize_t remainSize = destSizeWith0 - strlen(dest);
+
+	if (remainSize <= 1)
+	{
+		return dest;
+	}
+	else
+	{
+		return strncpy(dest, src, remainSize);
+	}
+}
+
+
+inline int AMCStrComp(const char *str1, const char *str2)
+{
+	return strcmp(str1, str2);
+}
+
+
+inline int AMCStrCaseComp(const char *str1, const char *str2)
+{
+	return strcasecmp(str1, str2);
+}
+
+
+inline size_t AMCStrLen(const char *str)
+{
+	return strlen(str);
+}
+
+
+char *AMCStrCat(char *dest, const char *src, size_t destSizeWith0)
+{
+	if ((NULL == dest)
+		|| (NULL == src))
+	{
+		return NULL;
+	}
+
+	ssize_t remainSize = destSizeWith0 - strlen(dest);
+
+	if (remainSize <= 1)
+	{
+		return dest;
+	}
+	else
+	{
+		return strncat(dest, src, remainSize);
+	}
+}
+
+
 /* simple semaphore operation functions */
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/sem.h>
 #if (OS_TYPE_MAC_OS_X != CFG_OS_TYPE)
+#if 0
 union semun{
 	int val;    /* Value for SETVAL */
 	struct semid_ds *buf;    /* Buffer for IPC_STAT, IPC_SET */
 	unsigned short  *array;  /* Array for GETALL, SETALL */
  	struct seminfo  *__buf;  /* Buffer for IPC_INFO (Linux specific) */
 };
+#endif
 #endif
 int simpleSemCreate(key_t key)
 {
@@ -911,26 +1389,26 @@ ssize_t simpleMsqRecv(int msqId, long int *pMsgType, void * pMsg, size_t size, i
 #include <fcntl.h>
 static unsigned int _socketLibErrLine = 0;
 #define	SOCK_PRESET_ERR_LINE()		_socketLibErrLine = __LINE__
-unsigned int simpleSocketErrLine(void)
+unsigned int AMCSocketErrLine(void)
 {
 	return _socketLibErrLine;
 }
-int simpleSocketCreate_local(void)
+int AMCSocketCreate_local(void)
 {
 	return socket(AF_UNIX, SOCK_STREAM, 0);
 }
 
-int simpleSocketCreate_tcp(void)
+int AMCSocketCreate_tcp(void)
 {
 	return socket(AF_INET, SOCK_STREAM, 0);
 }
 
-int simpleSocketCreate_udp(void)
+int AMCSocketCreate_udp(void)
 {
 	return socket(AF_INET, SOCK_DGRAM, 0);
 }
 
-int simpleSocketName_local(int socketId, const char *socketName)
+int AMCSocketName_local(int socketId, const char *socketName)
 {
 	struct sockaddr_un address;
 
@@ -939,7 +1417,7 @@ int simpleSocketName_local(int socketId, const char *socketName)
 	return bind(socketId, (struct sockaddr *)&address, sizeof(address));
 }
 
-int simpleSocketName_tcp(int socketId, const char *serverIpAddr, int port)
+int AMCSocketName_tcp(int socketId, const char *serverIpAddr, int port)
 {
 	struct sockaddr_in address;
 
@@ -949,12 +1427,12 @@ int simpleSocketName_tcp(int socketId, const char *serverIpAddr, int port)
 	return bind(socketId, (struct sockaddr *)&address, sizeof(address));
 }
 
-int simpleSocketListen(int socketId, int pendingLimit)
+int AMCSocketListen(int socketId, int pendingLimit)
 {
 	return listen(socketId, pendingLimit);
 }
 
-int simpleSocketAccept_local(int socketId, const char *socketName, int isNoWait)
+int AMCSocketAccept_local(int socketId, const char *socketName, int isNoWait)
 {
 	struct sockaddr_un address;
 	int funcCallStat;
@@ -984,7 +1462,7 @@ int simpleSocketAccept_local(int socketId, const char *socketName, int isNoWait)
 	return accept(socketId, (struct sockaddr *)&address, &sockLen);
 }
 
-int simpleSocketAccept_internet(int socketId, const char *serverIpAddr, int port, int isNoWait)
+int AMCSocketAccept_internet(int socketId, const char *serverIpAddr, int port, int isNoWait)
 {
 	struct sockaddr_in address;
 	int funcCallStat;
@@ -1015,7 +1493,7 @@ int simpleSocketAccept_internet(int socketId, const char *serverIpAddr, int port
 	return accept(socketId, (struct sockaddr *)&address, &sockLen);
 }
 
-int simpleSocketConnect_local(int socketId, const char *socketName)
+int AMCSocketConnect_local(int socketId, const char *socketName)
 {
 	struct sockaddr_un address;
 
@@ -1024,7 +1502,7 @@ int simpleSocketConnect_local(int socketId, const char *socketName)
 	return connect(socketId, (struct sockaddr *)&address, sizeof(address));
 }
 
-int simpleSocketConnect_internet(int socketId, const char *serverIpAddr, int port, const struct timeval *timeout)
+int AMCSocketConnect_internet(int socketId, const char *serverIpAddr, int port, const struct timeval *timeout)
 {
 	struct sockaddr_in address;
 	int funcCallStat;
@@ -1121,12 +1599,12 @@ RETURN:
 	return funcCallStat;
 }
 
-ssize_t simpleSocketWrite_tcp(int socketId, const void *data, size_t dataLen)
+ssize_t AMCSocketWrite_tcp(int socketId, const void *data, size_t dataLen)
 {
 	return write(socketId, data, dataLen);
 }
 
-ssize_t simpleSocketRead_tcp(int socketId, void *dataRead, size_t dataReadLimit, const struct timeval *timeout)
+ssize_t AMCSocketRead_tcp(int socketId, void *dataRead, size_t dataReadLimit, const struct timeval *timeout)
 {
 	struct timeval timeoutCopy;
 	fd_set fd;
@@ -1170,7 +1648,7 @@ ssize_t simpleSocketRead_tcp(int socketId, void *dataRead, size_t dataReadLimit,
 	return read(socketId, dataRead, dataReadLimit);
 }
 
-ssize_t simpleSocketSendto_udp(int socketId, const char *targetIPAddr, int port, const void *data, size_t dataLen)
+ssize_t AMCSocketSendto_udp(int socketId, const char *targetIPAddr, int port, const void *data, size_t dataLen)
 {
 	int tmp;
 	int setOptStat;
@@ -1215,7 +1693,7 @@ ssize_t simpleSocketSendto_udp(int socketId, const char *targetIPAddr, int port,
 }
 
 
-int simpleSocketBind_udp(int socketId, int portFrom)
+int AMCSocketBind_udp(int socketId, int portFrom)
 {
 	struct sockaddr_in address;
 	
@@ -1227,7 +1705,7 @@ int simpleSocketBind_udp(int socketId, int portFrom)
 }
 
 
-int simpleSocketBind_tcp(int socketId, int portFrom)
+int AMCSocketBind_tcp(int socketId, int portFrom)
 {
 	struct sockaddr_in address;
 	
@@ -1238,7 +1716,7 @@ int simpleSocketBind_tcp(int socketId, int portFrom)
 	return bind(socketId, (struct sockaddr *)&address, sizeof(struct sockaddr_in));
 }
 
-ssize_t simpleSocketReceiveFrom_udp
+ssize_t AMCSocketReceiveFrom_udp
 							(int socketId, 
 							const char *sourceIpAddr, 
 							struct sockaddr_in *srcAddress,
@@ -1310,19 +1788,247 @@ ssize_t simpleSocketReceiveFrom_udp
 }
 
 
-int simpleSocketClose(int socketId)
+int AMCSocketClose(int socketId)
 {
 	close(socketId);
 	return 0;
 }
 
-// TODO: socket lib not finished, I think...
+// _TODO: socket lib not finished, I think...
+
+BOOL _is_string_part_all_digit(const char *start, const char *stop)
+{
+	if (stop)
+	{
+		while (start < stop)
+		{
+			if (FALSE == isdigit(*start)) {
+				return FALSE;
+			}
+			else {
+				start ++;
+			}
+		}
+	}
+	else
+	{
+		while (*start)
+		{
+			if (FALSE == isdigit(*start)) {
+				return FALSE;
+			}
+			else {
+				start ++;
+			}
+		}
+	}
+	return TRUE;
+}
+
+
+BOOL _is_string_part_all_xdigit(const char *start, const char *stop)
+{
+	if (stop)
+	{
+		while (start < stop)
+		{
+			if (FALSE == isxdigit(*start)) {
+				return FALSE;
+			}
+			else {
+				start ++;
+			}
+		}
+	}
+	else
+	{
+		while (*start)
+		{
+			if (FALSE == isxdigit(*start)) {
+				return FALSE;
+			}
+			else {
+				start ++;
+			}
+		}
+	}
+	return TRUE;
+}
+
+
+BOOL AMCStringIsValidIPv4(const char *string, uint32_t *pIpNumOut)
+{
+	if (NULL == string) {
+		return FALSE;
+	}
+
+	uint8_t ipv4Parts[4] = {0,0,0,0};
+	size_t len = strlen(string);
+	size_t dotCount = 0;
+	const char *pStart, *pEnd;
+
+	if (len < sizeof("0.0.0.0") - 1) {
+		return FALSE;
+	}
+
+	/* search for dots */
+	pStart = string;
+	pEnd = string;
+	
+	while((dotCount < 3) && (pStart < (string + len)))
+	{
+		pEnd = strstr(pStart, ".");
+		if (NULL == pEnd)
+		{
+			return FALSE;
+		}
+		else
+		{
+			if (FALSE == _is_string_part_all_digit(pStart, pEnd)) {
+				return FALSE;
+			}
+			
+			uint32_t ipPart = (uint32_t)(strtol(pStart, NULL, 10));
+			if (ipPart > 255) {
+				return FALSE;
+			}
+
+			ipv4Parts[dotCount] = (uint8_t)ipPart;
+			pStart = pEnd + 1;
+			dotCount ++;
+		}
+	}
+
+	/* search for final part */
+	if (3 == dotCount)
+	{
+		if (FALSE == _is_string_part_all_digit(pStart, NULL)) {
+			return FALSE;
+		}
+	
+		uint32_t ipPart = (uint32_t)(strtol(pStart, NULL, 10));
+		if (ipPart > 255) {
+			return FALSE;
+		}
+
+		ipv4Parts[3] = (uint8_t)ipPart;
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	/* return */
+	if (pIpNumOut)
+	{
+		*pIpNumOut  = ((uint32_t)(ipv4Parts[0])) << 24;
+		*pIpNumOut += ((uint32_t)(ipv4Parts[1])) << 16;
+		*pIpNumOut += ((uint32_t)(ipv4Parts[2])) << 8;
+		*pIpNumOut += ((uint32_t)(ipv4Parts[3])) << 0;
+	}
+	
+	return TRUE;
+}
+
+
+BOOL AMCStringIsValidMAC(const char *string, uint64_t *pMacNumOut)
+{
+	if (NULL == string) {
+		return FALSE;
+	}
+
+	uint8_t macParts[6];
+	size_t len = strlen(string);
+	size_t barCount = 0;
+	const char *pStart, *pEnd;
+
+	/* search for bars */
+	pStart = string;
+	pEnd = string;
+	
+	while((barCount < 5) && (pStart < (string + len)))
+	{
+		pEnd = strstr(pStart, "-");
+		if (NULL == pEnd) {
+			pEnd = strstr(pStart, ":");
+		}
+		
+		if (NULL == pEnd)
+		{
+			return FALSE;
+		}
+		else
+		{
+			if (FALSE == _is_string_part_all_xdigit(pStart, pEnd)) {
+				return FALSE;
+			}
+		
+			uint32_t macPart = (uint32_t)(strtol(pStart, NULL, 16));
+			if (macPart > 255) {
+				return FALSE;
+			}
+
+			macParts[barCount] = (uint8_t)macPart;
+			pStart = pEnd + 1;
+			barCount ++;
+		}
+	}
+
+	/* search for final part */
+	if (5 == barCount)
+	{
+		if (FALSE == _is_string_part_all_xdigit(pStart, NULL)) {
+			return FALSE;
+		}
+	
+		uint32_t macPart = (uint32_t)(strtol(pStart, NULL, 16));
+		if (macPart > 255) {
+			return FALSE;
+		}
+
+		macParts[5] = (uint8_t)macPart;
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	/* return */
+	if (pMacNumOut)
+	{
+		*pMacNumOut  = ((uint64_t)(macParts[0])) << 40;
+		*pMacNumOut += ((uint64_t)(macParts[1])) << 32;
+		*pMacNumOut += ((uint64_t)(macParts[2])) << 24;
+		*pMacNumOut += ((uint64_t)(macParts[3])) << 16;
+		*pMacNumOut += ((uint64_t)(macParts[4])) << 8;
+		*pMacNumOut += ((uint64_t)(macParts[5])) << 0;
+	}
+	
+	return TRUE;
+}
+
+
+BOOL AMCIpAddressesAreAtTheSameSubnet(const char *ipA, const char *ipB, const char *subnetMask)
+{
+	uint32_t ipIntA, ipIntB, maskInt;
+
+	if (AMCStringIsValidIPv4(ipA, &ipIntA)
+		&& AMCStringIsValidIPv4(ipB, &ipIntB)
+		&& AMCStringIsValidIPv4(subnetMask, &maskInt))
+	{
+		return (ipIntA & maskInt) == (ipIntB & maskInt);
+	}
+	else
+	{
+		return FALSE;
+	}
+}
 
 
 /* network interface */
 #include <sys/types.h>
 #include <ifaddrs.h>
-int isSystemBigEndian()
+BOOL AMCSysIsBigEndian()
 {
 	static const union {
 		uint32_t i;
@@ -1339,7 +2045,7 @@ uint64_t htonll(uint64_t hostlonglong)
 		uint64_t u64;
 	} ret;
 
-	if (isSystemBigEndian())
+	if (AMCSysIsBigEndian())
 	{
 		return hostlonglong;
 	}
@@ -1358,7 +2064,7 @@ uint64_t ntohll(uint64_t netlonglong)
 		uint64_t u64;
 	} ret;
 	
-	if (isSystemBigEndian())
+	if (AMCSysIsBigEndian())
 	{
 		return netlonglong;
 	}
@@ -1413,12 +2119,22 @@ size_t ifaddrsGetAllIPv4(const struct ifaddrs *ifa,
 
 void inet_n4top(struct in_addr addr, char* str, size_t strLenLimit)
 {
-	if (NULL == str)
-	{
+	if (NULL == str) {
 		return;
 	}
 
 	inet_ntop(AF_INET, &addr, str, strLenLimit);
+	return;
+}
+
+
+void inet_n6top(struct in6_addr addr, char* str, size_t strLenLimit)
+{
+	if (NULL == str) {
+		return;
+	}
+
+	inet_ntop(AF_INET6, &addr, str, strLenLimit);
 	return;
 }
 
@@ -1475,6 +2191,199 @@ char *sock_ntop(const struct sockaddr *sa, socklen_t salen)
 }
 
 
+/* daemonize package */
+#include <unistd.h>
+#include <errno.h>
+#include <syslog.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
+mode_t AMCAppUnmask()
+{
+	return umask(0);
+}
+
+
+int AMCAppDaemonize(BOOL shouldCloseTerminal)
+{
+	int ret = 0;
+	int pid = -1;
+
+	/* unmask */
+	AMCAppUnmask();
+
+	/* daemonize this process and setsid */
+	pid = fork();
+	if (pid < 0) {
+		errPrintf("Daemon: fork failed: %s\n", strerror(errno));
+		ret = -1;
+		goto ENDS;
+	}
+	else if (pid != 0) {
+		/* exit parent process */
+		exit(0);
+	}
+	else {
+		setsid();
+	}
+
+	/* change work directory */
+	ret = chdir("/");
+	if (ret < 0) {
+		errPrintf("Daemon: change to root dir failed: %s\n", strerror(errno));
+		goto ENDS;
+	}
+
+	/* close fds */
+	AMCFdCloseAll();
+
+	/* attach file descriptors */
+	if (shouldCloseTerminal)
+	{
+		close(0);
+		close(1);
+		close(2);
+		open("/dev/null", O_RDWR);
+		dup(0);
+		dup(0);
+	}
+
+	/* return */
+ENDS:
+	return ret;
+}
+
+
+BOOL AMCAppAlreadyRunning(const char *pidDir, const char *pidFileName, int *pDuplicatePidOut)
+{
+	BOOL ret = FALSE;
+	int prevProcPid = 0;
+	char pidFileBuff[32] = "";
+	struct stat pidStat;
+
+	char fullPath[NAME_MAX + PATH_MAX + 1] = "";
+
+	if (pidDir && pidFileName)
+	{
+		strcpy(fullPath, pidDir);
+		strcat(fullPath, "/");
+		strcat(fullPath, pidFileName);
+	}
+	else
+	{
+		return FALSE;
+	}
+
+
+	/* ensure that the directly exists */
+	AMCDirCreate(pidDir);
+
+	/* check if the pid file already exists */
+	if (0 == stat(fullPath, &pidStat))
+	{
+		/* file exists, should check process status */
+
+		/* read pid */
+		size_t readLen;
+		FILE *pidFile = fopen(fullPath, "r");
+		if (pidFile)
+		{
+			readLen = fread(pidFileBuff, sizeof(*pidFileBuff), sizeof(pidFileBuff) - 1, pidFile);
+			pidFileBuff[readLen] = '\0';
+			if (0 == readLen) {
+				AMCPrintErr("Cannot read pid file: %s", strerror(errno));
+				ret = TRUE;
+				goto ENDS;
+			}
+			else {
+				prevProcPid = strtol(pidFileBuff, NULL, 10);
+				ret = TRUE;
+				/* !!! and need to check again */
+			}
+			/**/
+			fclose(pidFile);
+			pidFile = NULL;
+		}
+	}
+	else
+	{
+		ret = FALSE;
+	}
+
+	/* check if the detected pid still running */
+	if (prevProcPid > 0)
+	{
+		BOOL isProcAlive = FALSE;
+		
+		if (0 != kill(prevProcPid, 0))
+		{
+			int errnoCopy = errno;
+			if (ESRCH == errnoCopy) {
+				/* process dead abnormally */
+				unlink(fullPath);
+				prevProcPid = 0;
+				ret = FALSE;
+			}
+			else {
+				/* system error */
+				AMCPrintErr("Cannot stat process %d: %s", prevProcPid, strerror(errnoCopy));
+			}
+		}
+		else
+		{
+			/* process is alive */
+			isProcAlive = TRUE;
+		}
+		
+		/**/
+		if (isProcAlive) {
+			ret = TRUE;
+		}
+		else {
+			ret = FALSE;
+			prevProcPid = 0;
+		}
+	}
+
+	/* create pid file */
+	if (0 == prevProcPid)
+	{
+		int pidFd = open(fullPath, 
+						O_WRONLY | O_CREAT | O_EXCL | O_TRUNC,
+						S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		if (pidFd < 0) {
+			AMCPrintErr("Failed to create pid file: %s", strerror(errno));			
+			ret = TRUE;
+		}
+		else {
+			int writeLen;
+			prevProcPid = getpid();
+			
+			ftruncate(pidFd, 0);
+			
+			writeLen = snprintf(pidFileBuff, sizeof(pidFileBuff) - 1, "%d", prevProcPid);
+			write(pidFd, pidFileBuff, writeLen);
+				
+			close(pidFd);
+			pidFd = -1;
+		}
+	}
+	
+ENDS:
+	/* ENDS */
+	if (pDuplicatePidOut)
+	{
+		if (prevProcPid < 0) {
+			*pDuplicatePidOut = getpid();
+		}
+		else {
+			*pDuplicatePidOut = prevProcPid;
+		}
+	}
+	return ret;
+}
+
+
 
 /* simple timer configuration */
 #if (OS_TYPE_LINUX == CFG_OS_TYPE)
@@ -1486,7 +2395,7 @@ void (*timeOutFunc)(void);
 static timer_t simpleTimer;
 static struct sigevent simpleTimerSig;		/* dummy */
 static struct itimerspec simpleTimerConf;
-static bool_t isTimerCreated = FALSE;			/* adoid duplicated timer */
+static BOOL isTimerCreated = FALSE;			/* adoid duplicated timer */
 
 static void hddIdleTimerReset()
 {
@@ -1564,5 +2473,126 @@ int simpleTimerStop()
 	return -1;
 }
 #endif
+
+
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+
+int AMCDnsGetAddrinfo(const char *url, const char *protocol, struct addrinfo **pResultOut)
+{
+	struct addrinfo hint;
+	memset(&hint, 0, sizeof(hint));
+	hint.ai_flags = AI_CANONNAME | AI_ALL | AI_PASSIVE;
+
+	return getaddrinfo(url, protocol, &hint, pResultOut);
+}
+
+
+void AMCDnsFreeAddrinfo(struct addrinfo *info)
+{
+	if (info) {
+		freeaddrinfo(info);
+	}
+	return;
+}
+
+
+void AMCDnsDumpAddrinfo(const struct addrinfo *pAddrinfo)
+{
+	const struct addrinfo *pNext = pAddrinfo;
+	char buff[1024];
+
+	while(pNext)
+	{
+		char ipStr[128];
+		buff[0] = '\0';
+		size_t buffLen = 0;
+	
+		if (AF_INET == pNext->ai_family)
+		{
+			char ipStr[32];
+			struct sockaddr_in *sockinfo = (struct sockaddr_in *)(pNext->ai_addr);
+			
+			inet_n4top(sockinfo->sin_addr, ipStr, sizeof(ipStr));
+			buffLen = snprintf(buff, sizeof(buff), "IPv4: %s", ipStr);
+
+			buffLen += snprintf(buff + buffLen,
+								sizeof(buff) - buffLen,
+								" - Port %d",
+								ntohs(sockinfo->sin_port));
+		}
+		else
+		{
+			struct sockaddr_in6 *sockinfo = (struct sockaddr_in6 *)(pNext->ai_addr);
+			
+			inet_n6top(sockinfo->sin6_addr, ipStr, sizeof(ipStr));
+			buffLen = snprintf(buff, sizeof(buff), "IPv6: %s", ipStr);
+
+			buffLen += snprintf(buff + buffLen,
+								sizeof(buff) - buffLen,
+								" - Port %d",
+								ntohs(sockinfo->sin6_port));
+		}
+
+		switch(pNext->ai_socktype)
+		{
+			case SOCK_DGRAM:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									" - UDP");
+				break;
+			case SOCK_STREAM:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									" - TCP");
+				break;
+			case SOCK_RAW:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									" - Raw socket");
+				break;
+			case SOCK_RDM:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									" - Reliable connectionless messages");
+				break;
+			case SOCK_SEQPACKET:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									" - Reliable connection-oriented messages");
+				break;
+			case SOCK_DCCP:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									" - SOCK_DCCP");
+				break;
+			case SOCK_PACKET:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									" - SOCK_PACKET");
+				break;
+			default:
+				buffLen += snprintf(buff + buffLen,
+									sizeof(buff) - buffLen,
+									"Unknown type");
+				break;
+		}
+
+		if (pNext->ai_canonname) {
+			buffLen += snprintf(buff + buffLen,
+								sizeof(buff) - buffLen,
+								" (%s)",
+								pNext->ai_canonname);
+		}
+
+		AMCPrintf(buff);
+		
+		pNext = pNext->ai_next;
+	}
+
+	return;
+}
+
 
 

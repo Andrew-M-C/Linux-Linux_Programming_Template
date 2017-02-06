@@ -38,10 +38,13 @@ fi
 	cp readme ./"$BACK_DIR"/
 
 	
-	chmod 444 ./"$BACK_DIR"/*
-	chmod 444 "$BACK_DIR"
+#	chmod 444 ./"$BACK_DIR"/*
+#	chmod 444 "$BACK_DIR"
 
 	ls -la "$BACK_DIR"
+	ls -la ../template
+
+	tar -zcvf ../"$BACK_DIR.tar.gz" ../template/*
 	echo "Backup success"
 	date
 	exit 0
