@@ -56,8 +56,11 @@ struct AMCArray {
 	struct AMCArrayItem  *last;
 };
 
-
+#ifdef DEBUG
 #define _DB(fmt, args...)		AMCPrintf("<%s, %ld> "fmt, __FILE__, __LINE__, ##args)
+#else
+#define _DB(fmt, args...)
+#endif
 #define _LOCK_ARRAY(array)			do{/*_DB("-- LOCK --");*/ pthread_mutex_lock(&((array)->lock));}while(0)
 #define _UNLOCK_ARRAY(array)		do{/*_DB("--UNLOCK--");*/ pthread_mutex_unlock(&((array)->lock));}while(0)
 
@@ -475,7 +478,7 @@ AMCArray_st *AMCArray_New(AMCArrayErrno_st *pErrOut)
 		goto ENDS;
 	}
 
-	memset(ret, 0, sizeof(ret));
+	memset(ret, 0, sizeof(*ret));
 	pthread_mutex_init(&(ret->lock), NULL);
 
 ENDS:
