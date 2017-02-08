@@ -209,7 +209,7 @@ static AMCStaticRbNode_st *_rbTree_FindMinLeaf(AMCStaticRbNode_st *node)
 static struct AMCStaticRbNode *_rbTree_FindNode(AMCStaticRbTree_st *tree, const unsigned long id)
 {
 	AMCStaticRbNode_st *ret = tree->entry;
-	AMCStaticRbNode_st *parent = NULL;
+//	AMCStaticRbNode_st *parent = NULL;
 	BOOL isFound = FALSE;
 	
 	if (NULL == ret)
@@ -226,12 +226,12 @@ static struct AMCStaticRbNode *_rbTree_FindNode(AMCStaticRbTree_st *tree, const 
 		}
 		else if (id < ret->id)
 		{
-			parent = ret;
+			//parent = ret;
 			ret = ret->pLeft;
 		}
 		else
 		{
-			parent = ret;
+			//parent = ret;
 			ret = ret->pRight;
 		}
 	}
@@ -404,7 +404,7 @@ static struct AMCStaticRbNode *_rbTree_Insert(AMCStaticRbTree_st *tree, const un
 {
 	AMCStaticRbNode_st *node = tree->entry;
 	AMCStaticRbNode_st *ret = NULL;
-	AMCStaticRbNode_st *parent = tree->entry;
+//	AMCStaticRbNode_st *parent = tree->entry;
 
 	*isDuplicated = FALSE;
 	if (NULL == tree->entry)	// root
@@ -435,7 +435,7 @@ static struct AMCStaticRbNode *_rbTree_Insert(AMCStaticRbTree_st *tree, const un
 			}
 			else
 			{
-				parent = node;
+				//parent = node;
 				node = node->pLeft;
 			}
 		}
@@ -451,7 +451,7 @@ static struct AMCStaticRbNode *_rbTree_Insert(AMCStaticRbTree_st *tree, const un
 			}
 			else
 			{
-				parent = node;
+				//parent = node;
 				node = node->pRight;
 			}
 		}
