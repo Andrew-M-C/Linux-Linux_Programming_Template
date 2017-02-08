@@ -32,10 +32,18 @@ CPPFLAGS = $(CFLAGS)
 # shared libs to include
 LDFLAGS = -lpthread -lm -lrt -lev #-lbmbedtls -lmbedx509 -lmbedcrypto
 
+EXCLUDE_C_SRCS =AMCArp.c AMCMbedTLSTools.c AMCLibeventTool.c AMCLibevTools.c AMCBinSearchTree_Static.c AMCRandom.c
+EXCLUDE_CPP_SRCS =#
+
 # This is a good shell command
 # put your .c files here
-C_OBJS =$(shell ls *.c > clist.txt 2>/dev/null; sed 's/\.c/\.o/g' < clist.txt) 
-CPP_OBJS =$(shell ls *.cpp > cpplist.txt 2>/dev/null; sed 's/\.cpp/\.o/g' < cpplist.txt) 
+C_SRCS = $(filter-out $(EXCLUDE_C_SRCS), $(wildcard *.c))
+CPP_SRCS = $(filter-out $(EXCLUDE_CPP_SRCS), $(wildcard *.cpp))
+
+C_OBJS = $(C_SRCS:.c=.o)
+CPP_OBJS = $(CPP_SRCS:.cpp=.o)
+#C_OBJS =$(shell ls *.c > clist.txt 2>/dev/null; sed 's/\.c/\.o/g' < clist.txt) 
+#CPP_OBJS =$(shell ls *.cpp > cpplist.txt 2>/dev/null; sed 's/\.cpp/\.o/g' < cpplist.txt) 
 
 NULL =#
 ifneq ($(strip $(CPP_OBJS)), $(NULL))
@@ -66,7 +74,7 @@ install: all
 
 $(CPP_OBJS): $(CPP_OBJS:.o=.cpp)
 	$(CPP) -c $(CPPFLAGS) $*.cpp -o $*.o  
-	$(CPP) -MM $(CPPFLAGS) $*.cpp > $*.d  
+	@$(CPP) -MM $(CPPFLAGS) $*.cpp > $*.d  
 	@mv -f $*.d $*.d.tmp  
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d  
 	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
@@ -74,7 +82,7 @@ $(CPP_OBJS): $(CPP_OBJS:.o=.cpp)
 
 $(C_OBJS): $(C_OBJS:.o=.c)
 	$(CC) -c $(CFLAGS) $*.c -o $*.o
-	$(CC) -MM $(CFLAGS) $*.c > $*.d  
+	@$(CC) -MM $(CFLAGS) $*.c > $*.d  
 	@mv -f $*.d $*.d.tmp  
 	@sed -e 's|.*:|$*.o:|' < $*.d.tmp > $*.d  
 	@sed -e 's/.*://' -e 's/\\$$//' < $*.d.tmp | fmt -1 | sed -e 's/^ *//' -e 's/$$/:/' >> $*.d
@@ -82,8 +90,8 @@ $(C_OBJS): $(C_OBJS:.o=.c)
 
 
 $(PROG_NAME): $(C_OBJS) $(CPP_OBJS)
-	@rm clist.txt cpplist.txt
-	$(LD) -r -o $@.o $(C_OBJS) $(CPP_OBJS)
+	@echo "$(LD) -r -o $@.o *.o"
+	@$(LD) -r -o $@.o $(C_OBJS) $(CPP_OBJS)
 	$(CC) $@.o $(STATIC_LIBS) -o $@ $(LDFLAGS)
 	chmod $(TARMODE) $@
 
@@ -96,4 +104,6 @@ clean:
 test:
 	@echo -e "C_OBJS:\n$(C_OBJS)"
 	@echo -e "CPP_OBJS:\n$(CPP_OBJS)"
+	@echo -e "C_SRCS:\n$(C_SRCS)"
+	@echo -e "EXCLUDE_C_SRCS:\n$(EXCLUDE_C_SRCS)"
 
