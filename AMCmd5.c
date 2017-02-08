@@ -152,7 +152,7 @@ static void mvByteReverse(unsigned char *buf, unsigned longs)
 /* Modified by Andrew Chang on 2014-08-28 */
 static void mvByteReverse(unsigned char *buf, unsigned longs)
 {
-	if (isSystemBigEndian())
+	if (AMCSysIsBigEndian())
 	{
 		MV_U32 t;
 

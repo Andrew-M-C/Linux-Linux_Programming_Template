@@ -96,15 +96,6 @@
 #endif
 
 /*******************************************************
- * software information
- */
-#define	CFG_SOFTWARE_NAME_STR		"(no name)"
-#define	CFG_SOFTWARE_DISCRIPT_STR	"An application to contruct thread pool tool"
-#define	CFG_SOFTWARE_VER_STR		"0.0.1"
-#define	CFG_AUTHOR_STR		"Andrew Chang"
-
-
-/*******************************************************
  * library config
  */
 #define _GNU_SOURCE

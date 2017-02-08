@@ -9,7 +9,16 @@
 #define CFG_LIB_MEM
 #include "AMCCommonLib.h"
 
-#include "AMCArray.h"
+
+/*******************************************************
+ * software information
+ */
+#define	CFG_SOFTWARE_NAME_STR		"(no name)"
+#define	CFG_SOFTWARE_DISCRIPT_STR	"An application to test associative array"
+#define	CFG_SOFTWARE_VER_STR		"0.0.1"
+#define	CFG_AUTHOR_STR		"Andrew Chang"
+
+#include "AMCDictionary.h"
 
 #define _TO_PTR(value)		((void *)(value))
 
@@ -23,45 +32,29 @@
 	}while(0)
 static int trueMain(int argc, char* argv[])
 {
-	size_t count = 0;
-	AMCArray_st *array = AMCArray_New(NULL);
-	if (NULL == array) {
+	size_t count = 3;
+	AMCDictionary_st *dict = AMCDictionary_New(NULL);
+	if (NULL == dict) {
 		return -1;
 	}
 
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_DumpStatus(array, NULL);
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "3");
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "4");
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "5");
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "6");
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "7");
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "1");
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "2");
+	//AMCDictionary_DumpStatus(dict, NULL);
 
-	AMCArray_InsertObject(array, _TO_PTR(count++), 0);
-	AMCArray_DumpStatus(array, NULL);
-		
-	AMCArray_InsertObject(array, _TO_PTR(count++), 5);
-	AMCArray_DumpStatus(array, NULL);
+	AMCDictionary_AddObject(dict, _TO_PTR(count++), "222");
+	AMCDictionary_DumpStatus(dict, NULL);
 
-	AMCArray_InsertObject(array, _TO_PTR(count++), 2);
-	AMCArray_DumpStatus(array, NULL);
+	AMCDictionary_SetObject(dict, _TO_PTR(count++), "4", FALSE, NULL);
+	AMCDictionary_DumpStatus(dict, NULL);
 
-	AMCArray_RemoveObject(array, 3, FALSE);
-	AMCArray_DumpStatus(array, NULL);
-
-	AMCArray_RemoveObject(array, 5, FALSE);
-	AMCArray_DumpStatus(array, NULL);
-
-	AMCArray_RemoveObject(array, 0, FALSE);
-	AMCArray_DumpStatus(array, NULL);
-
-	AMCArray_RemoveObject(array, 6, FALSE);
-	AMCArray_DumpStatus(array, NULL);
-
-	AMCArray_RemoveObject(array, 5, FALSE);
-	AMCArray_DumpStatus(array, NULL);
+	AMCDictionary_RemoveObject(dict, "3", FALSE);
+	AMCDictionary_DumpStatus(dict, NULL);
 	
 	
 	/****/
