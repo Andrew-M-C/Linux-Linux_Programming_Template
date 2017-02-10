@@ -280,7 +280,7 @@ void    mvMD5Final(unsigned char digest[MV_MD5_MAC_LEN], MV_MD5_CONTEXT *ctx)
     mvMD5Transform(ctx->buf, (MV_U32 *) ctx->in);
     mvByteReverse((unsigned char *) ctx->buf, 4);
     memcpy(digest, ctx->buf, MV_MD5_MAC_LEN);
-    memset(ctx, 0, sizeof(ctx));        /* In case it's sensitive */
+    memset(ctx, 0, sizeof(*ctx));        /* In case it's sensitive */
 }
 
 /* The four core functions - F1 is optimized somewhat */

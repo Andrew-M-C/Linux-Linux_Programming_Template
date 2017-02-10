@@ -437,7 +437,7 @@ struct AMCThreadPool *AMCThreadPool_Create(size_t threadCount)
 			
 			callStat = pthread_create(&(threadArray[tmp].thread), NULL, _threadPoolTaskStatic, &(threadArray[tmp]));
 			if (0 == callStat) {
-				_DEBUG("Thread No.%d created", tmp);
+				_DEBUG("Thread No.%ld created", (long)tmp);
 				pool->freeCount += 1;
 				pool->threadTotal += 1;
 			}

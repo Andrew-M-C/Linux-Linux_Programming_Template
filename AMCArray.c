@@ -652,8 +652,8 @@ void AMCArray_DumpStatus(AMCArray_st *array, FILE *file)
 	
 	_DB("%p: Dump status:", array);
 	
-	fprintf(file, "Array %p, length %d, cached buffer %p(%d)\n", 
-			array, array->count, array->last_access_item, array->last_access_index);
+	fprintf(file, "Array %p, length %ld, cached buffer %p(%ld)\n", 
+			array, (long)(array->count), array->last_access_item, (long)(array->last_access_index));
 	fprintf(file, "First item: %p\n", array->first);
 	fprintf(file, "Last item:  %p\n", array->last);
 
@@ -667,18 +667,18 @@ void AMCArray_DumpStatus(AMCArray_st *array, FILE *file)
 			fprintf(file, "     START -> ");
 		}
 		else {
-			fprintf(file, "0x%08x -> ", TO_INT(item->prev));
+			fprintf(file, "0x%08lx -> ", TO_LONG(item->prev));
 		}
 
 		/* this */
-		fprintf(file, "0x%08x[0x%08x] -> ", TO_INT(item), TO_INT(item->value));
+		fprintf(file, "0x%08lx[0x%08lx] -> ", TO_LONG(item), TO_LONG(item->value));
 		
 		/* next */
 		if (NULL == item->next) {
 			fprintf(file, "END\n");
 		}
 		else {
-			fprintf(file, "0x%08x\n", TO_INT(item->next));
+			fprintf(file, "0x%08lx\n", TO_LONG(item->next));
 		}
 
 		item = item->next;

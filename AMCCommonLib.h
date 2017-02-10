@@ -794,8 +794,8 @@ extern int sigismember(const sigset_t *set, int signum);
 typedef struct timespec timespec_st;
 #endif
 int pthread_alive(pthread_t thread);
-inline int pthread_disableCancel(void);
-inline int pthread_enableCancel(void);
+int pthread_disableCancel(void);
+int pthread_enableCancel(void);
 #ifdef	CFG_DECLARE_LIB_FUNC
 extern int pthread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine)(void*), void *arg);
 extern int pthread_join(pthread_t thread, void **retval);

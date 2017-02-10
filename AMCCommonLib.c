@@ -791,12 +791,12 @@ int pthread_alive(pthread_t thread)
 	}
 }
 
-inline int pthread_disableCancel()
+int pthread_disableCancel()
 {
 	return pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
 }
 
-inline int pthread_enableCancel()
+int pthread_enableCancel()
 {
 	return pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 }
@@ -963,7 +963,7 @@ void AMCDataDump(const void *pData, const size_t size)
 	const uint8_t *data = pData;
 
 	printf ("---------------------------------------------------------------------------\n");
-	printf ("Base: 0x%08lx, length %d(0x%04x)\n", (unsigned long)(data), size, size);
+	printf ("Base: 0x%08lx, length %ld(0x%04lx)\n", (unsigned long)(data), (long)size, (long)size);
 	printf ("----  +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F    01234567 89ABCDEF\n");
 //	printf ("---------------------------------------------------------------------------\n");
 	
@@ -1000,7 +1000,7 @@ void AMCDataDump(const void *pData, const size_t size)
 			}
 		}
 
-		printf ("%04X: %s   %s\n", tmp, lineString, linechar);
+		printf ("%04lX: %s   %s\n", (long)tmp, lineString, linechar);
 	}
 
 	/* last line */
@@ -1048,7 +1048,7 @@ void AMCDataDump(const void *pData, const size_t size)
 			}
 		}
 #endif
-		printf ("%04X: %s   %s\n", tmp, lineString, linechar);
+		printf ("%04lX: %s   %s\n", (long)tmp, lineString, linechar);
 	}
 	
 	printf ("---------------------------------------------------------------------------\n");
@@ -1203,6 +1203,7 @@ ssize_t getSystemMsgmax(void)
 {
 	FILE *procFile;
 	ssize_t msgmax;
+	long msgmaxLong;
 
 	procFile = fopen("/proc/sys/kernel/msgmax", "r");
 	if (NULL == procFile)
@@ -1210,13 +1211,9 @@ ssize_t getSystemMsgmax(void)
 		return -1;
 	}
 
-#if ((OS_TYPE_IPHONE == CFG_OS_TYPE) || (OS_TYPE_MAC_OS_X == CFG_OS_TYPE))
-	fscanf(procFile, "%ld", &msgmax);
-#else
-	fscanf(procFile, "%d", &msgmax);
-#endif
-
+	fscanf(procFile, "%ld", &msgmaxLong);
 	fclose(procFile);
+	msgmax = (ssize_t)msgmaxLong;
 
 	if (0 == msgmax)
 	{
@@ -1232,6 +1229,7 @@ ssize_t getSystemMsgmnb(void)
 {
 	FILE *procFile;
 	ssize_t msgmnb;
+	long msgmnbLong;
 
 	procFile = fopen("/proc/sys/kernel/msgmnb", "r");
 	if (NULL == procFile)
@@ -1239,13 +1237,9 @@ ssize_t getSystemMsgmnb(void)
 		return -1;
 	}
 	
-#if ((OS_TYPE_IPHONE == CFG_OS_TYPE) || (OS_TYPE_MAC_OS_X == CFG_OS_TYPE))
-		fscanf(procFile, "%ld", &msgmnb);
-#else
-	fscanf(procFile, "%d", &msgmnb);
-#endif
-
+	fscanf(procFile, "%ld", &msgmnbLong);
 	fclose(procFile);
+	msgmnb = (ssize_t)msgmnbLong;
 
 	if (0 == msgmnb)
 	{

@@ -867,7 +867,7 @@ static AMCMutableBufferError_t _buffer_dump_to_shell (struct AMCMutableBuffer *b
 	int tmp = 0;
 	while (cluster)
 	{
-		snprintf(line, sizeof(line), "[%03d, %p] length: %d (0x%X)\n", tmp, cluster, cluster->dataLen, cluster->dataLen);
+		snprintf(line, sizeof(line), "[%03d, %p] length: %ld (0x%lX)\n", tmp, cluster, (long)(cluster->dataLen), (long)(cluster->dataLen));
 		write (fd, line, strlen(line));
 		
 		cluster = cluster->pNext;
@@ -881,7 +881,7 @@ static AMCMutableBufferError_t _buffer_dump_to_shell (struct AMCMutableBuffer *b
 	
 	snprintf(line, sizeof(line), "---------------------------------------------------------------------------\n");
 	write (fd, line, strlen(line));
-	snprintf(line, sizeof(line), "AMCMutableBuffer: 0x%08lx, length %d(0x%04x)\n", (unsigned long)(buffer), totalDataLen, totalDataLen);
+	snprintf(line, sizeof(line), "AMCMutableBuffer: 0x%08lx, length %ld(0x%04lx)\n", (unsigned long)(buffer), (long)totalDataLen, (long)totalDataLen);
 	write (fd, line, strlen(line));
 	snprintf(line, sizeof(line), "----  +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F    01234567 89ABCDEF\n");
 	write (fd, line, strlen(line));
@@ -946,7 +946,7 @@ static AMCMutableBufferError_t _buffer_dump_to_shell (struct AMCMutableBuffer *b
 				}
 			}
 
-			lineLen = snprintf(line, sizeof(line), "%04X: %s   %s\n", dataIndex, lineString, lineChar);
+			lineLen = snprintf(line, sizeof(line), "%04lX: %s   %s\n", (long)dataIndex, lineString, lineChar);
 			dataIndex += COLUMN_MAX;
 			lineRemains = COLUMN_MAX;
 
@@ -1001,7 +1001,7 @@ static AMCMutableBufferError_t _buffer_dump_to_shell (struct AMCMutableBuffer *b
 			}
 		}
 
-		lineLen = snprintf(line, sizeof(line), "%04X: %s   %s\n", dataIndex, lineString, lineChar);
+		lineLen = snprintf(line, sizeof(line), "%04lX: %s   %s\n", (long)dataIndex, lineString, lineChar);
 		dataIndex += COLUMN_MAX;
 		lineRemains = COLUMN_MAX;
 

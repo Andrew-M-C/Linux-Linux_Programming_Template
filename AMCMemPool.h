@@ -45,8 +45,8 @@ int AMCMemPool_SetEmptyCallback(struct AMCMemPool *pool, AMCMemPool_DidEmpty_Cal
 void *AMCMemPool_Alloc(struct AMCMemPool *pool);
 int AMCMemPool_Free(void *pData);
 
-inline unsigned long AMCMemPool_DataSize(void *data);
-inline unsigned long AMCMemPool_UnitSizeForPool(struct AMCMemPool *pool);
+unsigned long AMCMemPool_DataSize(void *data);
+unsigned long AMCMemPool_UnitSizeForPool(struct AMCMemPool *pool);
 
 void AMCMemPool_DebugStdout(struct AMCMemPool *pool);
 

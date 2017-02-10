@@ -656,13 +656,13 @@ int AMCMemPool_Free(void *pData)
 }
 
 
-inline unsigned long AMCMemPool_DataSize(void *data)
+unsigned long AMCMemPool_DataSize(void *data)
 {
 	return _memUnit_ByData(data)->pOwnerPool->unitSize;
 }
 
 
-inline unsigned long AMCMemPool_UnitSizeForPool(struct AMCMemPool *pool)
+unsigned long AMCMemPool_UnitSizeForPool(struct AMCMemPool *pool)
 {	
 	return pool->unitSize;
 }
