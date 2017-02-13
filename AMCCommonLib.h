@@ -877,7 +877,7 @@ extern int pipe(int filedes[2]);
 
 /* formated system() */
 #ifdef	CFG_LIB_SYSTEM
-int execFormatCmd(const char *format, ...);
+int AMCCommand(const char *format, ...);
 #endif
 
 

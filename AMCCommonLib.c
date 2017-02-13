@@ -386,7 +386,7 @@ int AMCDirCreate(const char *dirPath)
 /* headers included in errPrintf */
 #define	COMMAND_LEN		(256)
 static int systemEx(char *command);
-int execFormatCmd(const char *format, ...)
+int AMCCommand(const char *format, ...)
 {
 	char cmdBuff[COMMAND_LEN];
 	va_list vaList;
