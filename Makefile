@@ -30,7 +30,7 @@ LINKDIR = .
 CFLAGS = -Wall -I$(INCLUDE)
 CPPFLAGS = $(CFLAGS)
 # shared libs to include
-LDFLAGS = -lpthread -lm -lrt -lev #-lbmbedtls -lmbedx509 -lmbedcrypto
+LDFLAGS = -pthread -lm -lrt #-lev -lbmbedtls -lmbedx509 -lmbedcrypto
 
 # This is a good shell command
 # put your .c files here
