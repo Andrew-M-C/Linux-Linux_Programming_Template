@@ -56,6 +56,7 @@
 		2015-07-29: Add spinlock and POSIX semaphore.	
 		2015-10-19: Add poll(), epoll(), select() functions (CFG_LIB_SELECT)
 		2016-07-20: Add self defined daemon() functions and syslog lib (CFG_LIB_SYSLOG)
+		2017-04-19: Add sigprocmask(), sigpending(), strsignal()
 
 --------------------------------------------------------------
 	Copyright information: 
@@ -770,17 +771,21 @@ extern pid_t getppid(void);
 /* catch a signal */
 #ifdef	CFG_LIB_SIGNAL
 #include <signal.h>
+#include <string.h>
 typedef void (*sighandler_t)(int);
 typedef struct sigaction sigaction_st;
-//extern sighandler_t signal(int signum, sighandler_t handler);		/* not recommanded */
 int simpleSigaction(int signum, sighandler_t act);
 #ifdef	CFG_DECLARE_LIB_FUNC
+extern sighandler_t signal(int signum, sighandler_t handler);		/* not recommanded */
 extern int sigaction(int signum, const struct sigaction *act, struct sigaction *oldact);
 extern int sigemptyset(sigset_t *set);
 extern int sigfillset(sigset_t *set);
 extern int sigaddset(sigset_t *set, int signum);
 extern int sigdelset(sigset_t *set, int signum);
 extern int sigismember(const sigset_t *set, int signum);
+extern int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+extern int sigpending(sigset_t *set);
+extern char *strsignal(int sig);
 #endif
 #if 0
 #define	SIGABRT

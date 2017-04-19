@@ -4,69 +4,80 @@
 #define CFG_LIB_STDOUT
 #define CFG_LIB_FILE
 #define CFG_LIB_ERRNO
-#define CFG_LIB_DAEMON
 #define CFG_LIB_SLEEP
 #define CFG_LIB_MEM
+#define CFG_LIB_SIGNAL
 #include "AMCCommonLib.h"
 
-#include "AMCArray.h"
 
-#define _TO_PTR(value)		((void *)(value))
+static void _sig_quit(int signum)
+{
+	static int callCount = 0;
+
+	AMCPrintf("[%02d] Got signal: %s", callCount, strsignal(signum));
+	callCount ++;
+
+	if (callCount >= 10) {
+		exit(0);
+	}
+
+	return;
+}
 
 
 /**********/
 /* main */
-#define _TEST_ERROR_AND_DO(error, op)	do{\
-		if (0 == error) { \
-			error = op; \
-		} \
-	}while(0)
 static int trueMain(int argc, char* argv[])
 {
-	size_t count = 0;
-	AMCArray_st *array = AMCArray_New(NULL);
-	if (NULL == array) {
-		return -1;
+	int retryTimes = 5;
+	sigset_t newMask, oldMask, pendMask;
+	int callStat = 0;
+
+	sigemptyset(&newMask);
+	sigemptyset(&oldMask);
+	sigemptyset(&pendMask);
+
+	callStat = signal(SIGQUIT, SIG_IGN);
+	if (callStat < 0) {
+		AMCPrintErr("Failed in signal(): %s", strerror(errno));
+		goto END;
 	}
 
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_AddObject(array, _TO_PTR(count++));
-	AMCArray_DumpStatus(array, NULL);
+	sigaddset(&newMask, SIGQUIT);
 
-	AMCArray_InsertObject(array, _TO_PTR(count++), 0);
-	AMCArray_DumpStatus(array, NULL);
-		
-	AMCArray_InsertObject(array, _TO_PTR(count++), 5);
-	AMCArray_DumpStatus(array, NULL);
+	for (/**/; retryTimes > 0; retryTimes --)
+	{
+		callStat = sigprocmask(SIG_BLOCK, &newMask, &oldMask);
+		if (callStat < 0) {
+			AMCPrintErr("Failed in sigprocmask(): %s", strerror(errno));
+			goto END;
+		}
 
-	AMCArray_InsertObject(array, _TO_PTR(count++), 2);
-	AMCArray_DumpStatus(array, NULL);
+		AMCPrintf("Sleeping starts");
+		sleep(5);
+		AMCPrintf("Sleeping stops");
 
-	AMCArray_RemoveObject(array, 3, FALSE);
-	AMCArray_DumpStatus(array, NULL);
+		callStat = sigpending(&pendMask);
+		if (callStat < 0) {
+			AMCPrintErr("Failed in sigpending(): %s", strerror(errno));
+			goto END;
+		}
 
-	AMCArray_RemoveObject(array, 5, FALSE);
-	AMCArray_DumpStatus(array, NULL);
+		if (sigismember(&pendMask, SIGQUIT)) {
+			AMCPrintf("Signal SIGQUIT pending");
+		}
 
-	AMCArray_RemoveObject(array, 0, FALSE);
-	AMCArray_DumpStatus(array, NULL);
-
-	AMCArray_RemoveObject(array, 6, FALSE);
-	AMCArray_DumpStatus(array, NULL);
-
-	AMCArray_RemoveObject(array, 5, FALSE);
-	AMCArray_DumpStatus(array, NULL);
-	
+		callStat = sigprocmask(SIG_SETMASK, &oldMask, NULL);
+		if (callStat < 0) {
+			AMCPrintErr("Failed in sigprocmask(): %s", strerror(errno));
+			goto END;
+		}
+	}
 	
 	/****/
 	/* ENDS */
-	return 0;
+END:
+	return (0 == callStat) ? 0 : -1;
 }
 
 
