@@ -1,0 +1,46 @@
+#!/bin/sh
+
+#BACK_DIR="$1"
+BACK_DIR=`date '+%02y%02m%02d_%02H%02M'`
+if mkdir $BACK_DIR
+then
+	make clean
+
+	cp AMC* ../template -f
+	cp Makefile ../template -f
+	cp backup ../template -f
+	cp readme ../template -f	
+	cp main.c ../template -f
+
+#	cp AMCCommonLib.c ../template -f
+#	cp AMCCommonLib.h ../template -f
+#	cp main.c ../template -f
+#	cp AMCSignalHandler.c ../template -f
+#	cp AMCSignalHandler.h ../template -f
+#	cp AMCConfigParser.c ../template -f
+#	cp AMCConfigParser.h ../template -f
+#	cp AMCBmp.c ../template -f
+#	cp AMCBmp.h ../template -f
+#	cp AMCTimeMark.c ../template -f
+#	cp AMCTimeMark.h ../template -f
+
+	cp *.c ./"$BACK_DIR"/
+	cp *.h ./"$BACK_DIR"/
+	
+	cp Makefile ./"$BACK_DIR"/
+
+	cp readme ./"$BACK_DIR"/
+
+	
+	chmod 444 ./"$BACK_DIR"/*
+	chmod 444 "$BACK_DIR"
+
+	ls -la "$BACK_DIR"
+	echo "Backup success"
+	date
+	exit 0
+else
+	echo "Create $BACK_DIR failed"
+	echo "Backup failed"
+	exit 1
+fi

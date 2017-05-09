@@ -1,0 +1,6 @@
+#!/bin/bash
+read input
+while ["exit" != ${input}]; do
+	echo "Got $input"
+	read input
+exit

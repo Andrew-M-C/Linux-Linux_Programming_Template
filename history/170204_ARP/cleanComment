@@ -1,0 +1,30 @@
+#!/bin/sh
+#这个脚本是用来删除所有的注释的
+#但是面对多行的/**/注释还是删除不了
+
+TARGET=$1
+
+function del_asterisk()
+{
+	echo Now delete "/**/"
+	find ${TARGET} \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.cs" \) | xargs -I [] egrep -l "\/\*.*\*\/" "[]" | xargs -I [] sed -i 's/\/\*.*\*\///g' "[]"
+}
+
+function del_double_slash()
+{
+	echo Now delete //...
+	find ${TARGET} \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.cs" \) | xargs -I [] egrep -l "\s+\/\/.*$" "[]" | xargs -I [] sed -i 's/\s\/\/.*$//g' "[]"
+	find ${TARGET} \( -name "*.c" -o -name "*.h" -o -name "*.cpp" -o -name "*.cs" \) | xargs -I [] egrep -l "^\/\/.*$" "[]" | xargs -I [] sed -i 's/^\/\/.*$//g' "[]"
+}
+
+if [ -d ${TARGET} ]; then
+	echo "Now search in ${TARGET}"
+	del_asterisk
+	del_double_slash
+	echo Clean comment OK
+else
+	echo "${TARGET} is not a directory."
+	exit 1
+fi
+
+

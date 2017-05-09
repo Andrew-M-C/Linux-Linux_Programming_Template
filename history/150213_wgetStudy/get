@@ -1,0 +1,18 @@
+URL=
+
+if [ "" != "$1" ]; then
+	URL=$1
+	echo Get URL: ${URL}
+else
+	echo "Please specify URL."
+	exit 1
+fi
+
+mkdir images
+wget ${URL} -O ${URL}.html
+cd images
+egrep -o "\bhttp:\/\/.{0,100}\.(jpg|jpeg|gif|png)\b" ../${URL}.html | xargs wget
+#egrep -o "http:\/\/[a-zA-Z0-9\/\-\.\:]{0,100}\.(jpg|jpeg|gif|png)" ../${URL}.html | xargs wget
+cd -
+#rm ${URL}.html -rf
+echo "Get images complete"

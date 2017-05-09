@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<!-- jsn_metro_free 2.0.1 -->
+<html lang="en-gb" dir="ltr">
+<head>
+	  <base href="http://tp-link.net/" />
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="author" content="Super User" />
+  <meta name="generator" content="Joomla! - Open Source Content Management" />
+  <title>内网导航</title>
+  <link href="/templates/jsn_metro_free/favicon.ico" rel="shortcut icon" type="image/vnd.microsoft.icon" />
+  <link rel="stylesheet" href="/media/system/css/modal.css" type="text/css" />
+  <link rel="stylesheet" href="/media/com_attachments/css/attachments_hide.css" type="text/css" />
+  <link rel="stylesheet" href="/media/com_attachments/css/attachments_list.css" type="text/css" />
+  <link rel="stylesheet" href="/components/com_imageshow/assets/css/style.css" type="text/css" />
+  <link rel="stylesheet" href="/plugins/system/jsntplframework/assets/3rd-party/bootstrap/css/bootstrap-frontend.min.css" type="text/css" />
+  <link rel="stylesheet" href="/templates/system/css/system.css" type="text/css" />
+  <link rel="stylesheet" href="/templates/system/css/general.css" type="text/css" />
+  <link rel="stylesheet" href="/templates/jsn_metro_free/css/template.css" type="text/css" />
+  <link rel="stylesheet" href="/templates/jsn_metro_free/css/colors/image.css" type="text/css" />
+  <link rel="stylesheet" href="/templates/jsn_metro_free/css/styles/business.css" type="text/css" />
+  <link rel="stylesheet" href="/plugins/jsnimageshow/themeslider/assets/css/style.css" type="text/css" />
+  <link rel="stylesheet" href="/plugins/jsnimageshow/themeslider/assets/css/skitter/skitter.styles.css" type="text/css" />
+  <style type="text/css">
+	#jsn-page,
+	#jsn-pos-topbar {
+		width: 960px;
+		min-width: 960px;
+	}.jsn-themeslider-skitter-Pj0GC .label_skitter {filter:alpha(opacity=0);opacity: 0;}.jsn-themeslider-skitter-Pj0GC .label_skitter p.jsn-themeslider-caption-title {font-family: 'Source Sans Pro',Verdana,Geneva,Arial,Helvetica,sans-serif;
+text-transform:uppercase;
+font-size: 10px;
+font-weight:300;
+text-align: left;
+color: #FFFFFF;
+margin-bottom:1px;
+padding:10px;
+background: rgba(0,0,0, .9)
+}.jsn-themeslider-skitter-Pj0GC .label_skitter p.jsn-themeslider-caption-description {font-family: Arial;
+font-size: 16px;
+font-weight:300;
+text-align: left;
+color: #FFF;
+margin-top:0;
+padding:10px;
+background: rgba(0,0,0, .3);
+font-family: 'Source Sans Pro',Verdana,Geneva,Arial,Helvetica,sans-serif;}.jsn-themeslider-skitter-Pj0GC .label_skitter a.jsn-themeslider-caption-link {font-family: Verdana;
+font-size: 11px;
+font-weight: bold;
+text-align: right;
+color: #E06614;}.jsn-themeslider-skitter-Pj0GC .label_skitter {bottom: 0;}.jsn-themeslider-skitter-Pj0GC .info_slide {top: 15px;}.jsn-themeslider-skitter-Pj0GC .info_slide_dots {top: 15px;}
+  </style>
+  <script src="/media/system/js/mootools-core.js" type="text/javascript"></script>
+  <script src="/media/system/js/core.js" type="text/javascript"></script>
+  <script src="/media/system/js/caption.js" type="text/javascript"></script>
+  <script src="/media/system/js/mootools-more.js" type="text/javascript"></script>
+  <script src="/media/system/js/modal.js" type="text/javascript"></script>
+  <script src="/media/com_attachments/js/attachments_refresh.js" type="text/javascript"></script>
+  <script src="/plugins/system/jsntplframework/assets/joomlashine/js/noconflict.js" type="text/javascript"></script>
+  <script src="/plugins/system/jsntplframework/assets/joomlashine/js/utils.js" type="text/javascript"></script>
+  <script src="/templates/jsn_metro_free/js/jsn_template.js" type="text/javascript"></script>
+  <script src="/components/com_imageshow/assets/js/jquery.min.js" type="text/javascript"></script>
+  <script src="/plugins/jsnimageshow/themeslider/assets/js/jsn_is_conflict.js" type="text/javascript"></script>
+  <script src="/plugins/jsnimageshow/themeslider/assets/js/skitter/jquery.easing.1.3.js" type="text/javascript"></script>
+  <script src="/plugins/jsnimageshow/themeslider/assets/js/skitter/jquery.animate-colors-min.js" type="text/javascript"></script>
+  <script src="/plugins/jsnimageshow/themeslider/assets/js/skitter/jquery.skitter.js" type="text/javascript"></script>
+  <script type="text/javascript">
+window.addEvent('load', function() {
+				new JCaption('img.caption');
+			});
+		window.addEvent('domready', function() {
+
+			SqueezeBox.initialize({});
+			SqueezeBox.assign($$('a.modal'), {
+				parse: 'rel'
+			});
+		});
+				JSNTemplate.initTemplate({
+					templatePrefix			: "jsn_metro_free_",
+					templatePath			: "/templates/jsn_metro_free",
+					enableRTL				: 0,
+					enableGotopLink			: 1,
+					enableMobile			: 0,
+					enableMobileMenuSticky	: 1,
+					enableDesktopMenuSticky	: 0,
+					responsiveLayout		: []
+				});
+			function keepAlive() {	var myAjax = new Request({method: "get", url: "index.php"}).send();} window.addEvent("domready", function(){ keepAlive.periodical(3600000); });
+  </script>
+
+    <script type="text/javascript" src="/templates/jsn_metro_free/js/jquery.js"></script>
+    <script type="text/javascript" src="/templates/jsn_metro_free/js/inputmail.js"></script>
+    <script type="text/javascript">
+        var $j = jQuery.noConflict();
+        $j(function(){
+            $j("#username").changeTips({
+                divTip:".on_changes"
+            }); 
+        })
+    </script>
+</head>
+<body id="jsn-master" class="jsn-textstyle-business jsn-color-image jsn-direction-ltr jsn-desktop jsn-joomla-25 custom-rightwidth-35 jsn-com-content jsn-view-article jsn-itemid-435 jsn-homepage">
+        <embed type='application/x-cas' id='cas_server' width='0' height='0'/>
+		<div id="jsn-page">
+			<div id="jsn-header">
+			<div id="jsn-header-top">
+                <div id="jsn-logo" class="pull-left">
+					<a href="/index.php" title=""><img src="/templates/jsn_metro_free/images/colors/image/logo.png" alt="" id="jsn-logo-desktop" /></a>                </div>
+				<div id="jsn-headerright" class="pull-right">
+						
+						<div id="jsn-pos-top" class="pull-left">
+							<div class=" jsn-modulecontainer"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent">
+<div  >
+	<div class="feedback"><a href="/home/tp-feedback.html"><img class="topbar" src="/images/photos/feedback.png" border="0" alt="意见反馈" title="意见反馈" width="25px" height="25px" /> </a> <a href="/home/help-center.html"> <img class="topbar" src="/images/photos/help.png" border="0" alt="帮助" title="帮助" width="25px" height="25px" /> </a></div></div><div class="clearbreak"></div></div></div></div><div class=" jsn-modulecontainer"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent"><form action="search.html" method="post">
+	<div class="search">
+		<label for="mod-search-searchword"></label><input name="searchword" id="mod-search-searchword" maxlength="20"  class="inputbox" type="text" size="25" value="搜索..."  onblur="if (this.value=='') this.value='搜索...';" onfocus="if (this.value=='搜索...') this.value='';" />	<input type="hidden" name="task" value="search" />
+	<input type="hidden" name="option" value="com_search" />
+	<input type="hidden" name="Itemid" value="" />
+	</div>
+</form>
+<div class="clearbreak"></div></div></div></div>
+						</div>
+					 				</div>
+				<div class="clearbreak"></div>
+			</div>
+			<div id="jsn-header-bottom">
+				<div id="jsn-header-bottom-inner">
+					<div id="jsn-menu">
+																	<div id="jsn-pos-toolbar">
+								<div class=" jsn-modulecontainer"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent"><!--
+<div class="externallogin">
+	<form action="" method="post" id="external-login">
+		<fieldset class="loginform">
+			</fieldset>
+	</form>
+	<div class="clr"></div>
+</div>
+-->
+
+<div class="clearbreak"></div></div></div></div>
+							</div>
+																			<div id="jsn-pos-mainmenu">
+								<div class=" jsn-modulecontainer"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent"><script src="/templates/jsn_metro_free/js/jquery.js"></script>
+<ul class="menu-mainmenu menu-iconmenu">
+<li  class="current active first jsn-icon-home"><a class="current" href="/" title="Start here" >
+	<span>
+		<span class="jsn-menutitle">首页</span><span class="jsn-menudescription">Start here</span>	</span>
+</a></li><li ><a  href="/infor-column.html" >
+	<span>
+		通知公告	</span>
+</a></li><li ><a  href="/tp-norm.html" >
+	<span>
+		流程规范	</span>
+</a></li><li ><a  href="/tp-navigational-links.html" >
+	<span>
+		服务器导航	</span>
+</a></li><li ><a  href="/tp-call-list.html" >
+	<span>
+		通讯录	</span>
+</a></li><li ><a  href="/colorful-life-mainmenu.html" >
+	<span>
+		七彩生活	</span>
+</a></li><li  class="last"><a  href="/about-company.html" >
+	<span>
+		关于公司	</span>
+</a></li></ul><div class="clearbreak"></div></div></div></div>
+							</div>
+									
+										</div></div>
+
+			</div>
+		</div>
+		<div class="clearbreak"></div>
+		<div id="jsn-body">
+			<div id="jsn-body-inner">
+											<div id="jsn-promo" class="jsn-haspromoright row-fluid"><div id="jsn-promo-inner">
+						                    <div id="jsn-pos-promo" class="span9 order1 ">
+		                        <div class=" jsn-modulecontainer"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent"><!-- JSN IMAGESHOW PRO UNLIMITED 4.8.1 - Theme Slider 1.1.6 --><div class="jsn-container"><div class="jsn-gallery"><div id="jsn-themeslider-skitter-Pj0GC"><div style="width: 100%; height: 230px;" class="box_skitter jsn-themeslider-gallery jsn-themeslider-skitter-Pj0GC">
+<ul><li>
+			   			<a href="http://tp-link.net/images/main-slider/20140714/120203.jpg" >
+			   				<img src="http://tp-link.net/images/main-slider/20140714/120203.jpg" alt="120203.jpg"/>
+			   			</a>
+			   			<div class="label_text"></div>
+					 </li><li>
+			   			<a href="http://tp-link.net/images/main-slider/20140714/homepage1-.png" >
+			   				<img src="http://tp-link.net/images/main-slider/20140714/homepage1-.png" alt="homepage1-.png"/>
+			   			</a>
+			   			<div class="label_text"></div>
+					 </li><li>
+			   			<a href="http://tp-link.net/images/main-slider/20140714/homepage2-.png" >
+			   				<img src="http://tp-link.net/images/main-slider/20140714/homepage2-.png" alt="homepage2-.png"/>
+			   			</a>
+			   			<div class="label_text"></div>
+					 </li><li>
+			   			<a href="http://tp-link.net/images/main-slider/20140714/homepage3-.png" >
+			   				<img src="http://tp-link.net/images/main-slider/20140714/homepage3-.png" alt="homepage3-.png"/>
+			   			</a>
+			   			<div class="label_text"></div>
+					 </li><li>
+			   			<a href="http://tp-link.net/images/main-slider/20140714/homepage5-.png" >
+			   				<img src="http://tp-link.net/images/main-slider/20140714/homepage5-.png" alt="homepage5-.png"/>
+			   			</a>
+			   			<div class="label_text"></div>
+					 </li><li>
+			   			<a href="http://tp-link.net/images/main-slider/20140714/homepage6-.png" >
+			   				<img src="http://tp-link.net/images/main-slider/20140714/homepage6-.png" alt="homepage6-.png"/>
+			   			</a>
+			   			<div class="label_text"></div>
+					 </li><li>
+			   			<a href="http://tp-link.net/images/main-slider/20140714/homepage4-MVP.png" >
+			   				<img src="http://tp-link.net/images/main-slider/20140714/homepage4-MVP.png" alt="homepage4-MVP.png"/>
+			   			</a>
+			   			<div class="label_text"></div>
+					 </li></ul><input type="hidden" class="cache_skitter_index" value="" /></div>
+</div><script type="text/javascript">
+						jsnThemeSliderjQuery(function() {
+						jsnThemeSliderjQuery(document).ready(function(){
+							
+							var oldHTML = jsnThemeSliderjQuery('#jsn-themeslider-skitter-Pj0GC').html();
+							var options = {"animation":"fade","navigation":false,"dots":true,"numbers":false,"numbers_align":"right","caption_title_css":"font-family: 'Source Sans Pro',Verdana,Geneva,Arial,Helvetica,sans-serif;\r\ntext-transform:uppercase;\r\nfont-size: 10px;\r\nfont-weight:300;\r\ntext-align: left;\r\ncolor: #FFFFFF;\r\nmargin-bottom:1px;\r\npadding:10px;\r\nbackground: rgba(0,0,0, .9)\r\n","caption_description_css":"font-family: Arial;\r\nfont-size: 16px;\r\nfont-weight:300;\r\ntext-align: left;\r\ncolor: #FFF;\r\nmargin-top:0;\r\npadding:10px;\r\nbackground: rgba(0,0,0, .3);\r\nfont-family: 'Source Sans Pro',Verdana,Geneva,Arial,Helvetica,sans-serif;","caption_link_css":"font-family: Verdana;\r\nfont-size: 11px;\r\nfont-weight: bold;\r\ntext-align: right;\r\ncolor: #E06614;","caption_position":"bottom","caption_caption_opacity":"filter:alpha(opacity=0);opacity: 0;","interval":2000,"controls":false,"stop_over":true,"auto_play":true,"caption_title_show":false,"caption_description_show":true,"caption_link_show":false,"label":true,"animateNumberActive":{"backgroundColor":"#ffffff","color":"#fff"},"click_action":"open_image_link","open_link_in":"current_browser","skitter_class_id":"jsn-themeslider-skitter-Pj0GC"};
+							options.base_height = 230;
+							jsnThemeSliderjQuery('.jsn-themeslider-skitter-Pj0GC').skitter(options);
+							jsnThemeSliderjQuery('.jsn-themeslider-skitter-Pj0GC .image_main').css("max-width", "");
+							var jsn_Pj0GC = jsnThemeSliderjQuery(window).width();
+							var cacheResize;
+							jsnThemeSliderjQuery(window).resize(function (e) {
+								if (jsn_Pj0GC != jsnThemeSliderjQuery(window).width())
+								{
+									clearTimeout(cacheResize);
+									cacheResize = "";
+									var oldCacheIndex = jsnThemeSliderjQuery('#jsn-themeslider-skitter-Pj0GC .cache_skitter_index').attr('value');
+									jsnThemeSliderjQuery('#jsn-themeslider-skitter-Pj0GC').html(oldHTML);
+									
+									jsnThemeSliderjQuery('#jsn-themeslider-skitter-Pj0GC .cache_skitter_index').attr('value', oldCacheIndex);
+									var options = {"animation":"fade","navigation":false,"dots":true,"numbers":false,"numbers_align":"right","caption_title_css":"font-family: 'Source Sans Pro',Verdana,Geneva,Arial,Helvetica,sans-serif;\r\ntext-transform:uppercase;\r\nfont-size: 10px;\r\nfont-weight:300;\r\ntext-align: left;\r\ncolor: #FFFFFF;\r\nmargin-bottom:1px;\r\npadding:10px;\r\nbackground: rgba(0,0,0, .9)\r\n","caption_description_css":"font-family: Arial;\r\nfont-size: 16px;\r\nfont-weight:300;\r\ntext-align: left;\r\ncolor: #FFF;\r\nmargin-top:0;\r\npadding:10px;\r\nbackground: rgba(0,0,0, .3);\r\nfont-family: 'Source Sans Pro',Verdana,Geneva,Arial,Helvetica,sans-serif;","caption_link_css":"font-family: Verdana;\r\nfont-size: 11px;\r\nfont-weight: bold;\r\ntext-align: right;\r\ncolor: #E06614;","caption_position":"bottom","caption_caption_opacity":"filter:alpha(opacity=0);opacity: 0;","interval":2000,"controls":false,"stop_over":true,"auto_play":true,"caption_title_show":false,"caption_description_show":true,"caption_link_show":false,"label":true,"animateNumberActive":{"backgroundColor":"#ffffff","color":"#fff"},"click_action":"open_image_link","open_link_in":"current_browser","skitter_class_id":"jsn-themeslider-skitter-Pj0GC"};
+									options.base_height = 230;
+									cacheResize = setTimeout(function () {
+										jsnThemeSliderjQuery('.jsn-themeslider-skitter-Pj0GC').skitter(options);
+										jsnThemeSliderjQuery('.jsn-themeslider-skitter-Pj0GC .image_main').css("max-width", "");
+									}, 500);
+									jsn_Pj0GC = jsnThemeSliderjQuery(window).width();
+								}
+							});
+						})});
+				</script><div class="jsn-themeslider-seocontent">
+<div><p>JSN ImageShow Metro</p><p></p><ul><li><p>120203.jpg</p><p><a href="http://tp-link.net/images/main-slider/20140714/120203.jpg">http://tp-link.net/images/main-slider/20140714/120203.jpg</a></p></li><li><p>homepage1-.png</p><p><a href="http://tp-link.net/images/main-slider/20140714/homepage1-.png">http://tp-link.net/images/main-slider/20140714/homepage1-.png</a></p></li><li><p>homepage2-.png</p><p><a href="http://tp-link.net/images/main-slider/20140714/homepage2-.png">http://tp-link.net/images/main-slider/20140714/homepage2-.png</a></p></li><li><p>homepage3-.png</p><p><a href="http://tp-link.net/images/main-slider/20140714/homepage3-.png">http://tp-link.net/images/main-slider/20140714/homepage3-.png</a></p></li><li><p>homepage5-.png</p><p><a href="http://tp-link.net/images/main-slider/20140714/homepage5-.png">http://tp-link.net/images/main-slider/20140714/homepage5-.png</a></p></li><li><p>homepage6-.png</p><p><a href="http://tp-link.net/images/main-slider/20140714/homepage6-.png">http://tp-link.net/images/main-slider/20140714/homepage6-.png</a></p></li><li><p>homepage4-MVP.png</p><p><a href="http://tp-link.net/images/main-slider/20140714/homepage4-MVP.png">http://tp-link.net/images/main-slider/20140714/homepage4-MVP.png</a></p></li></ul></div></div>
+</div></div><div class="clearbreak"></div></div></div></div>
+		                    </div>
+						                    <div id="jsn-pos-promo-right" class="span3 order2 ">
+								<div class=" jsn-modulecontainer"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent"><div id="login-module" align="center">
+
+<p id="login-title">内网统一认证</p>
+<p id="form-login-msg">
+    </p> 
+
+   
+
+<form action="http://cas.tp-link.net:8080/cas/login?return=http://tp-link.net/" method="post" id="form-login" onsubmit="return getLt();">
+
+		<fieldset class="input userdata" id="login-frame">
+		<!--<p id="form-login-username-label">
+			<label for="modlgn_username">账号</label>
+			<br />
+			<input id="modlgn-username" type="text" name="username" class="inputbox"  size="18" />
+		</p>-->
+        <p id="form-login-username-input">
+			<!--<label for="modlgn_username" class="label-username">账号</label>-->
+			<input id="username" type="text" name="username" class="inputbox" tabindex="1" placeholder="账号" autocomplete="off" value="" />
+            <ul style="display: none;" class="on_changes">
+    			<li id="login-email-list" class="active" style="display: list-item;cursor:pointer;" email="@tp-link.net">@tp-link.net</li>
+    			<li id="login-email-list" style="display: list-item;cursor:pointer;" email="@tp-link.com">@tp-link.com</li>
+    			<li id="login-email-list" style="display: list-item;cursor:pointer;" email="@tp-link.com.cn">@tp-link.com.cn</li>
+            </ul>
+		</p>
+		<p id="form-login-password">
+			<!--<label for="modlgn_passwd" class="label-passwd">密码</label>-->
+			<input id="password" type="password" name="password" class="inputbox" tabindex="2" placeholder="密码"/>
+		</p>
+		        <p id="form-login-remember">
+			<input id="modlgn_remember" type="checkbox" name="remember" value="yes" alt="Remember Me" checked="checked"/>
+			<label for="modlgn_remember" id="label-remember">记住账号</label>
+            <a id="modlgn_forgot_passwd" href="/home/password-reset.html"> 忘记密码?</a>
+        </p>
+				<div class="button-wrapper">
+		<input type="submit" name="Submit" class="button" value="登录" />
+		<input type="hidden" name="option" value="com_users" />
+		<input type="hidden" name="task" value="user.login" />
+		<input type="hidden" name="return" value="aW5kZXgucGhwP0l0ZW1pZD00MzU=" />
+        <input type="hidden" name="lt" value="" id="J_LoginTicket"/>
+        <input type="hidden" name="_eventId" value="submit" />
+		<input type="hidden" name="ff51e7adb2ef108f2f1ebb224f9996b3" value="1" />		</div>
+	</fieldset>
+	<!--<ul>
+		<li> <a href="/home/password-reset.html"> 忘记密码?</a> </li>
+		<li> <a href="/home/tp-feedback.html?view=remind"> Forgot your username?</a> </li>
+				<li> <a href="/home/tp-feedback.html?view=registration"> Create an account</a> </li>
+			</ul>-->
+	</form>
+</div>
+<div class="clearbreak"></div></div></div></div>
+		                    </div>
+												<div class="clearbreak"></div>
+				</div></div>
+				                
+                					<div id="jsn-content-top-over" class="jsn-modulescontainer jsn-modulescontainer1 row-fluid">
+						<div id="jsn-pos-content-top-over">
+							<div class=" jsn-modulecontainer span12"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent">
+<div  >
+	<table class="home-server-links">
+<tbody>
+<tr><th class="dashline"><a id="content-user" href="http://oa.tp-link.net" target="_blank" title="OA自动化办公系统"><img src="/images/photos/oa.png" border="0" /></a> <br /><a id="content-user" href="http://oa.tp-link.net" target="_blank" title="OA自动化办公系统">自动化办公</a></th><th class="dashline"><a id="content-user" href="http://poprod.tp-link.net:8000/OA_HTML/AppsLocalLogin.jsp" target="_blank" title="项目采购系统"><img src="/images/photos/buy.png" border="0" /></a> <br /> <a id="content-user" href="http://poprod.tp-link.net:8000/OA_HTML/AppsLocalLogin.jsp" target="_blank" title="项目采购系统">项目采购</a></th><th class="dashline"><a id="content-user" href="http://erpapp.tp-link.net/" target="_blank" title="ERP资源管理系统"><img src="/images/photos/erp.png" border="0" /></a> <br /> <a id="content-user" href="http://erpapp.tp-link.net/" target="_blank" title="ERP资源管理系统">ERP系统</a></th><th class="dashline"><a id="content-user" href="http://ams.tp-link.net" target="_blank" title="资产管理系统"><img src="/images/photos/ams.png" border="0" /></a> <br /> <a id="content-user" href="http://ams.tp-link.net" target="_blank" title="资产管理系统">资产管理</a></th><th class="dashline"><a id="content-user" href="http://selfservice.tp-link.net" target="_blank" title="员工自助系统"><img src="/images/photos/selfservice.png" border="0" /></a> <br /> <a id="content-user" href="http://selfservice.tp-link.net" target="_blank" title="员工自助系统">员工自助</a></th><th><a id="content-user" href="http://bugzilla.tp-link.net" target="_blank" title="bugzilla"><img src="/images/photos/bugzilla-home-link.png" border="0" /></a> <br /> <a id="content-user" href="http://bugzilla.tp-link.net" target="_blank" title="bugzilla">Bugzilla</a></th><!--
+<tr>
+<td><a id="content-user" href="http://oa.tp-link.net" target="_blank">自动化办公</a></td>
+<td> </td>
+<td><a id="content-user" href="http://erpapp.tp-link.net/" target="_blank"><img src="/images/photos/erp.png" border="0" /></a></td>
+<td><a id="content-user" href="http://ams.tp-link.net" target="_blank"><img src="/images/photos/ams.jpg" border="0" /></a></td>
+<td><a id="content-user" href="http://selfservice.tp-link.net" target="_blank"><img src="/images/photos/selfservice.png" border="0" /></a></td>
+<td><a id="content-user" href="http://mail.tp-link.net" target="_blank"><img src="/images/photos/mail.png" border="0" /></a></td>
+<td><a id="content-user" href="http://mail.tp-link.com.cn" target="_blank"><img src="/images/photos/mail.png" border="0" /></a></td>
+<td><a id="content-user" href="http://webmail.tp-link.com" target="_blank"><img src="/images/photos/mail.png" border="0" /></a></td>
+</tr>
+--> <!--
+<tr>
+<td><a id="content-user" href="http://oa.tp-link.net" target="_blank">OA办公</a></td>
+<td><a id="content-user" href="http://poprod.tp-link.net:8000/OA_HTML/AppsLocalLogin.jsp" target="_blank">项目采购</a></td>
+<td><a id="content-user" href="http://erpapp.tp-link.net/" target="_blank">ERP管理</a></td>
+<td><a id="content-user" href="http://ams.tp-link.net" target="_blank">资产管理</a></td>
+<td><a id="content-user" href="http://selfservice.tp-link.net" target="_blank">员工自助</a></td>
+<td><a id="content-user" href="http://mail.tp-link.net" target="_blank">内网邮件</a></td>
+<td><a id="content-user" href="http://mail.tp-link.com.cn" target="_blank">外网邮件-国内</a></td>
+<td><a id="content-user" href="http://webmail.tp-link.com" target="_blank">外网邮件-国外</a></td>
+</tr>--></tr>
+</tbody>
+</table></div><div class="clearbreak"></div></div></div></div>
+							<div class="clearbreak"></div>
+						</div>
+					</div>
+			                      
+								
+			            		<div id="jsn-content" class="jsn-hasleft ">
+						<div id="jsn-content_inner" class="row-fluid">
+							
+							<div id="jsn-maincontent" class="span9 order2 offset3">
+								<div id="jsn-maincontent_inner">
+								<div id="jsn-centercol">
+									<div id="jsn-centercol_inner">
+													
+				
+										<div id="jsn-mainbody-content" class=" jsn-hasmainbody  row-fluid">
+															<div id="mainbody-content-inner" class="span12 order1 ">
+																<div id="jsn-mainbody">
+									
+<div id="system-message-container">
+</div>
+									<div class="com-content custom-rightwidth-35">
+	<div class="article">
+				
+			
+		
+				
+		
+				
+				
+		<div class="jsn-article-content">
+																		
+										<div id="jsn-article-demo">
+<div>
+<table>
+<tbody>
+<tr>
+<td width="30%"><hr /></td>
+<td align="center" width="20%">通知公告</td>
+<td width="30%"><hr /></td>
+</tr>
+</tbody>
+</table>
+</div>
+<table class="notice">
+<tbody>
+<tr>
+<td onclick="showList(0, 2);changeImg('img_1,img_2');" ><img id="img_1" class="jsn-article-demo" src="/images/icons/notice-select.png" border="0" alt="公司通知" title="公司通知" style="display:inline"/><img id="1_gmi" class="jsn-article-demo" src="/images/icons/notice.png" border="0" alt="公司通知" title="公司通知"  style="display:none"/></td>
+<td id="td_content_0" onclick="showList(0, 2);changeImg('img_1,img_2');" style="color:#32A0D2">公司通知</td>
+<td>|</td>
+<td onclick="showList(1, 2);changeImg('2_gmi,1_gmi');"><img id="img_2" class="jsn-article-demo" src="/images/icons/mail.png" border="0" alt="个人订阅" title="个人订阅"  style="display:inline" /><img id="2_gmi" class="jsn-article-demo" src="/images/icons/mail-select.png" border="0" alt="个人订阅" title="个人订阅" style="display:none"/></td>
+<td id="td_content_1" onclick="showList(1, 2);changeImg('2_gmi,1_gmi');">个人订阅</td>
+</tr>
+</tbody>
+</table>
+<div id="div_content_0" class="content" style="display: inline;">
+<div class="tpl-arti-list"><!--<ul class="latestnews">-->
+
+	<!--<li>-->
+        <p class="home-articles-lastest">
+        <img class="jsn-article-demo" src="/images/icons/icon-arrow.png"/>
+		<a href="/infor-column/information/3119%3Agongzi2-gongzi2.html?ct=UzEANgc%2F">
+			【通知】2015年1月工资到账及工资查询系统开放的通知        </a>
+                                           
+                 
+                        <span class="article_date">
+            02-12</span>
+        </p>
+	<!--</li>-->
+	<!--<li>-->
+        <p class="home-articles-lastest">
+        <img class="jsn-article-demo" src="/images/icons/icon-arrow.png"/>
+		<a href="/infor-column/information/3108%3Afengcun-fengcun.html?ct=BGZSZFZu">
+			 【通知】关于春节假期公司本部封存的通知        </a>
+                                           
+                 
+                        <span class="article_date">
+            02-06</span>
+        </p>
+	<!--</li>-->
+	<!--<li>-->
+        <p class="home-articles-lastest">
+        <img class="jsn-article-demo" src="/images/icons/icon-arrow.png"/>
+		<a href="/infor-column/information/3100%3Agongzuopai-gongzuopai.html?ct=AGJXYQM7">
+			【通知】关于重申出入公司需佩戴工作牌的通知        </a>
+                                           
+                 
+                        <span class="article_date">
+            02-03</span>
+        </p>
+	<!--</li>-->
+	<!--<li>-->
+        <p class="home-articles-lastest">
+        <img class="jsn-article-demo" src="/images/icons/icon-arrow.png"/>
+		<a href="/infor-column/information/3098%3Azhizaochuchunjie-zhizaochuchunjie.html?ct=VzUANgE5">
+			【通知】CW1501012关于制造处各部门春节放假通知        </a>
+                                           
+                 
+                        <span class="article_date">
+            02-02</span>
+        </p>
+	<!--</li>-->
+	<!--<li>-->
+        <p class="home-articles-lastest">
+        <img class="jsn-article-demo" src="/images/icons/icon-arrow.png"/>
+		<a href="/infor-column/information/3097%3Anianzhongjiang2014-nianzhongjiang2014.html?ct=VzUEMlBo">
+			【通知】2014年年终奖年前部分到账通知        </a>
+                                           
+                 
+                        <span class="article_date">
+            01-30</span>
+        </p>
+	<!--</li>-->
+	<!--<li>-->
+        <p class="home-articles-lastest">
+        <img class="jsn-article-demo" src="/images/icons/icon-arrow.png"/>
+		<a href="/infor-column/information/3095%3Anianzhongjiang-nianzhongjiang.html?ct=BGYDNQE5">
+			【通知】2014年年终奖金发放通知        </a>
+                                           
+                 
+                        <span class="article_date">
+            01-28</span>
+        </p>
+	<!--</li>-->
+	<!--<li>-->
+        <p class="home-articles-lastest">
+        <img class="jsn-article-demo" src="/images/icons/icon-arrow.png"/>
+		<a href="/infor-column/information/3083%3Awuyeguanli-wuyeguanli.html?ct=VTdXYVFp">
+			【通知】物业管理模块上线通知        </a>
+                                           
+                 
+                        <span class="article_date">
+            01-26</span>
+        </p>
+	<!--</li>-->
+
+<!--</ul>-->
+</div>
+<div class="more"><a class="more" href="/infor-column.html"><img src="/images/icons/more-button.png" border="0" /></a></div>
+</div>
+<div id="div_content_1" class="content" style="display: none;">
+<div class="tpl-arti-list">
+<!--<ul class="custom">-->
+<p class="home-inform-notice">
+请登录后查看，登录后可点击用户名，进入个人中心，配置订阅版块</p>
+<!--</ul>-->
+</div>
+<div class="more"><a class="more" href="/infor-column.html"><img src="/images/icons/more-button.png" border="0" /></a></div>
+</div>
+</div> <div class="attachmentsContainer">
+
+<div class="attachmentsList" id="attachmentsList_com_content_default_103"></div>
+
+</div>			
+			                        		</div>
+		<div class="clearbreak"></div>
+					</div>
+</div>
+
+								</div>
+															</div>
+												</div>
+
+
+													</div>
+								</div>
+								</div>
+							</div>
+
+									<div id="jsn-leftsidecontent" class="span3 order1 offset-12">
+								<div id="jsn-leftsidecontent_inner">
+									<div id="jsn-pos-left">
+										<div class=" jsn-modulecontainer"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent">
+<div  >
+	<div><a href="/tp-call-list.html"> <img class="mainpage" src="/images/phoneList.png" border="0" alt="phoneList Image" /> </a></div>
+<div><a href="/tp-norm.html"> <img class="mainpage" src="/images/norm.png" border="0" alt="norm Image" /> </a></div>
+<div><a href="/home/outstanding-employee.html"> <img class="mainpage" src="/images/outstanding-employee.png" border="0" alt="Demo Image" /> </a></div></div><div class="clearbreak"></div></div></div></div>
+									</div>
+								</div>
+							</div>
+										</div>
+					</div>
+				</div>
+		</div>
+			<div id="jsn-footer">
+			<div id="jsn-footer-inner">
+				<div id="jsn-footermodules" class="jsn-modulescontainer jsn-modulescontainer1">
+												<div id="jsn-pos-bottom" class="row-fluid">
+								<div class=" jsn-modulecontainer span12"><div class="jsn-modulecontainer_inner"><div class="jsn-modulecontent">
+<!--<div class="maintain-info"><a href="/index.php">帮助</a> |</div>
+<div class="maintain-info"><a href="/index.php">意见反馈</a> |</div>-->
+
+<div class="maintain-info">
+<a href="mailto:jinting@tp-link.net?subject=[PORTAL SITE] feedback" title="网站信息由人事行政处发布、审核、修改、更新，如需发布消息，请点击该链接邮件咨询联系人事行政处">人事行政处</a>|
+</div>
+
+<div class="maintain-info">
+<a href="mailto:chenlei@tp-link.net?subject=[PORTAL SITE] feedback" title="如果您在使用中遇到任何错误、异常，请通过网站右上方的“意见反馈”反应您遇到的问题，或点击该链接邮件咨询">测试部自动化组</a> |
+</div>
+<div class="maintain-info">技术支持：87736，网站管理：89559</div>
+<div class="copyright-info">Copyright © 2012 - 2015 TP-LINK Technologies Co., Ltd. All rights reserved</div><div class="clearbreak"></div></div></div></div>
+							</div>
+									</div>
+			</div>
+		</div>
+		<!--<div id="jsn-brand">
+		<a href="http://www.joomlashine.com" title="Joomla templates by Joomlashine" target="_blank"><strong>Joomla templates</strong></a> by Joomlashine
+	</div>-->
+	</div>
+
+
+</body>
+</html>

@@ -1,0 +1,242 @@
+/* "readme" file, Last modified on 2012-12-04 */
+Histroy:
+2012-12-19: Add simple UDP socket support. But Server UDP support not implemented.
+2016-05-16: Add description of version 3.0.0
+
+
+==================================================================================================
+<<<< Copyright information >>>>
+
+    The files mentioned below are open-source. However, they do not follow GPL protocols. 
+I won't make them be under GPL limit until I use them on a GPL project.
+    Just to prevent some jural issues. I have a free heart!!! And they will GPLed some day!
+    However, all rights are reserved by myself, Andrew Chang. I can use them in a commer-
+cial project, no matter open or close. But anyone wants to do te same thing, he needs my 
+permission.
+
+==================================================================================================
+<<<< Version information >>>>
+
+1. Version 1.0.0
+    This version is called "miscStudy_v01". This version is initialliy provided for convient stan-
+dard Linux C library call. This library has several coding style:
+    (1) The "commonLib" is included after library requirement definitions are defined.
+    (2) The user library provided by Andrew (such as signalHandler) functions are defined in va-
+rious style. Some of them are leaded by "simple-" to identify that this is a simple user library
+function.
+
+2. Version 2.0.0
+    This version is called "miscStudy_v02". The main purpose of this version of library is to make
+functions and file names more clear. The commonLib would not be changed too much. Main modifaca-
+tions happened in Andrew-designed user libraries. Most functions, library names, basic types,
+structures would be leaded with "AMC" prefix.
+
+3. Version 3.0.0
+    This version is update most of self-defined interfaces in AMCCommonLib from simple... into AMC....
+The reason I did this is because I wanted to create a lib used by myself. And "simple" seemed to be
+quite low ^_^.
+
+==================================================================================================
+<<<< General discriptions >>>>
+
+    This readme file is meant to explain the usage of the library files by Andrew Chang.
+
+    For any suggestions and bugs, please contact Andrew Chang by E-mail below:
+    1. laplacezhang@126.com
+    2. zhangmin@tp-link.com.cn
+
+    This library tool contains files below:
+    1. AMCCommonLib.c/h:    This file provide automatic "include" sentences by defining config macros. 
+                            Also some simple library tools are declared here. 
+    2. AMCConfigParser.c/h: This file provide simple tools to read configuration from config files. 
+                            The format should be in "XXX=YYY" format, or "XXX =YYY" or "XXX= YYY".
+    3. AMCSignalHandler.c/h: If you want to process with signal, please include this header. This lib
+                            needs "-pthread" link option. But this lib is depreciated because it is
+                            better to process signal in async I/O libraries.
+    4. 
+
+    Actually, the makefile "Makefile" and the script file "backup" also could be treated parts of 
+this library. The "Makefile", simply enough, acts as a common makefile for a tiny project. While
+the "backup" copy all source files and back them up. 
+
+
+==================================================================================================
+<<<< Detailed Usage and Notes >>>>
+
+    Now please allow to me explain or note some complex function calls.
+
+------------------------------------------------------
+<< Berkeley Socket >>
+
+----------------------------
+"isNoWait" parameter:
+
+    In functions simpleMsqRecv(), simpleSocketAccept_local(), there is a special parameter named
+"isNoWait". All values passed by this parameter are valid. Functions treat 0 as FALSE, while !0 as
+TRUE. If TRUE == isNoWait, function will return immediately if there is no data to read. 
+    In the "No Wait" case, when there is no data requieed to read, return value differ between fun-
+ctions. Generally, 0 would be returned to identify "No Data" if the function also be responced to
+copy data from IPC file descriptor. Or -1 would be returned if the function simply does the job of
+accepting connection or requesting, but readding data. In the first case, simpleMsqRecv() is its ex-
+ample, while simpleSocketAccept_local() the second's.
+
+----------------------------
+Unlink: 
+
+    Before the server starts its service, it is recommanded to unlink or remove the socket file that
+is going to use in local socket mode. This prevents the possibility that the previous program may be 
+shut down adnormally, which leaves an inactive socket file alone. 
+
+----------------------------
+Local Version of TCP: 
+    
+    Server call sequence:
+    1. Call simpleSocketCreate_local() and return an ID of socket. 
+    2. Name the socket by calling simpleSocketName_local(). This will create a socket file at your
+specific location of file system. 
+    3. Call simpleSocketListen() with pending queue limit. This function will open the server service.
+    4. When a new client comes, it would try to connect(). Server calls simpleSocketAccept_local() to 
+accept the connection fron a new client. This function returns ANOTHER socket ID. This function also 
+need a parameter to identify whether to block when no connection requested. 
+    5. Use the socket ID retured in Step 4 as a file descriptor and read() from it to get socket me-
+ssage. Of cause, you can call write to send message to client.
+    6. If you want to accept more connection from another client, call simpleSocketAccept_local() in 
+another thread or child-process.
+    7. Close the socket ID when quiting the server by calling close(). The client socket IDs returned
+in Step 4 also need to be closed.
+
+    Client call sequence: 
+    1. Call simpleSocketCreate_local() and return an ID of socket. 
+    2. Call simpleSocketConnect_local() with the same name defined in server. 
+    3. Usr the socket ID as file descriptor and call write() to send message. Function write() is also
+available.
+    4. Close the socket ID when the communication is over. 
+
+----------------------------
+Internet Version of TCP:
+
+    Document not finished yet. 
+
+----------------------------
+Local Version:
+
+    Document not finished yet.
+    
+----------------------------
+Internet Version of UDP:
+
+    Server call sequence (receive and send):
+    Function not finished yet.
+
+    Client call sequence (send and receive):
+    1. Call simpleSocketCreate_udp() to create an ID of socket.
+    2. If you want to specify local network port, call simpleSocketBind_udp() with socket fd and local 
+port (the source port when sending). If not, the operating system would assign one ramdomly for you.
+Then you can call this function later.
+    3. Call simpleSocketSendto_udp() to send data. Parameters are: 
+    	socket ID
+    	target IPv4 address in "XXX.XXX.XXX.XXX" format
+    	target port
+    	pointer to data to be sent
+    	data length in bytes
+    4. If you want to catch packets responded from server, call simpleSocketReceiveFrom_udp(). Parameters
+are:
+    	socket ID
+    	server IPV4 address in "XXX.XXX.XXX.XXX" format. NULL if you want to receive from any IPs
+    	local port you want to listen
+    	a pointer to a "struct sockaddr" structure that would tell you server information later then
+    	data read buffer
+    	data read amount limit in bytes
+    	timeout. NULL if you want to wait forever
+    5. If simpleSocketReceiveFrom_udp() returns -1, system error occurs. If 0 returned, timeout. Otherwise
+It returns data length read.
+    6. simpleSocketReceiveFrom_udp() could be called cyclely.
+    7. Call simpleSocketClose() to close the socket.
+
+
+------------------------------------------------------
+<< Message Queue >>
+
+----------------------------
+Limit of message queue length
+
+    In message queue library, I provide two functions getSystemMsgmax() and getSystemMsgmnb()
+to read system config. getSystemMsgmax() returns the max length a simgle message could have. 
+And getSystemMsgmnb() returns the max length all message could have (???) . These two variables locate 
+in different config files in "/proc/sys/kernel/". I simply read them from the files. Before calling 
+message queue functions, the check with these two functions is highly recommanded. 
+
+
+------------------------------------------------------
+<< Simple BMP Tools >>
+
+---------------------------
+Introduction
+
+    If one wants to use simple BMP tools, simple include the header file "simpleBmp.h". These two files
+provide tools to create, read, modify BMP files. 
+
+    As this is a simple bmp tool, it supports limited BMP formats. First of all, it only support BMP file
+with color depth of 24-bits, which have 8-bit color space for each primary color (RGB), and no "alpha" co-
+lor. Meanwhile, the Compress Type of BMP file should only be 0x00. Thirdly, the header size would always
+be 0x36, which means this BMP file is BITMAPINFOHEADER type, a type used in all Windows versions 
+since Windows 3.0. 
+    Reference: http://en.wikipedia.org/wiki/BMP_file_format
+
+---------------------------
+Usage
+
+1. Creating a new BMP file (this will overwrite the previous file with a same name)
+
+    Programmer should create a structure with type "BMP_INFO_t". And then assign the BMP image width
+and height (member .bmpWidth and .bmpHeight) in pixel first. Call simpleBmpCreate(). It would return 
+a file descriptior pointed to the new BMP file (NULL if failed). The file would be opened with mode "w". 
+    After simpleBmpCreate() returns, th rest of the BMP file information would be filled-up, and a new
+BMP file would be created. From now on, you can operate BMP file with other "cimpleBMP" functions. Also
+you can directly access with the file, but it is not recommanded. 
+
+2. Opening an existing BMP file
+
+    Calling function simpleBmpOpen() would open an existing bMP file. No initialization of the BMP_INFO_t
+data is required. All you need to do is assign the data space for it, and pass its address to the BMP open
+function. This function returns the file desriptor of BMP file (NULL if failed). I strongly suggest that 
+"mode" be just "r" or "r+".
+
+3. Closing BMP file descriptor
+
+    As most Linux file descriptor operations do, a opened file descriptor should be closed when all opera-
+tions are done. Call simpleBmpClose() to close it at the end of youe program. 
+
+4. Accessing single pixel of BMP file
+
+    Function simpleBmpPixelRead() and simpleBmpPixelWrite() provides methods to read/write a single pixel 
+data fron/to the BMP file. If one just want to access few pixels of the BMP file and does not expect a 
+large waste of memory allocation (simpleBmpOpen() need memory allocation though), please call the two fun-
+ction mentioned above. 
+
+5. Accessing the complete BMP pixel array
+
+    Functions memtioned in the previous tiny title does not usually called actually. Although the system
+call fwrite() has built-in buffer-write, the frquence fwrite() call waste a lot of time. A more practical
+solution is to use local data buffer. 
+    Calling simpleBmpDataArrayMalloc() to allocate a data buffer to storage data array read from BMP file.
+The ".bmpWidth" and ".bmpHeight" members should be initialized previously. This function returns the add-
+ress of the data buffer. Like the malloc function, at the end of youe program, please call the 
+simpleBmpDataArrayFree() to de-allocate the data buffer. 
+    The best sequence is calling bmp open/create function firstly, and then this allocate one. 
+    The operation to this data buffer is provided by functions simpleBmpDataArrayPixelRead() and
+simpleBmpDataArrayPixelWrite(), while simpleBmpDataArrayLoad() and simpleBmpDataArraySave() read/write the 
+buffered data from/into the BMP file.
+
+
+------------------------------------------------------
+<< time marking tool >>
+
+    Please include timeMark.h to use this simple debug tool. This tool simple print the current system in 
+a format of "XXX.YYYsec", with XXX identifies the seconds after the tool is firstly called, while YYY the 
+mili-seconds. The first time you call this function (using macro MARK_TIME() is highly recommanded), it 
+prints "000.000sec".
+    Please use this tool only in debug version of program. Otherwise It produces many wasted informations.
+
+
+
