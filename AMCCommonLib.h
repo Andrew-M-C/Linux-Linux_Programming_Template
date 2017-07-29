@@ -65,8 +65,8 @@
 		
 ********************************************************************************/
 
-#ifndef	_AMC_COMMON_LIB
-#define	_AMC_COMMON_LIB
+#ifndef	__AMC_COMMON_LIB_H__
+#define	__AMC_COMMON_LIB_H__
 
 #include <stdint.h>
 
@@ -717,6 +717,11 @@ extern time_t mktime(struct tm *tm);
 extern size_t strftime(char *s, size_t max, const char *format, const struct tm *tm);
 extern int gettimeofday(struct timeval *tv, struct timezone *tz);
 extern int settimeofday(const struct timeval *tv , const struct timezone *tz);
+extern void timeradd(struct timeval *a, struct timeval *b, struct timeval *res);
+extern void timersub(struct timeval *a, struct timeval *b, struct timeval *res);
+extern void timerclear(struct timeval *tvp);
+extern int timerisset(struct timeval *tvp);
+extern int timercmp(struct timeval *a, struct timeval *b, CMP);
 /* This function is not used occasionally */
 //#define _XOPEN_SOURCE
 //extern char *strptime(const char *s, const char *format, struct tm *tm);

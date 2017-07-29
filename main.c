@@ -33,6 +33,7 @@
 static int trueMain(int argc, char* argv[])
 {
 	if (argc < 2) {
+		AMCPrintf("No pid specified");
 		return -1;
 	}
 

@@ -30,7 +30,7 @@ LINKDIR = .
 CFLAGS = -Wall -I$(INCLUDE)
 CPPFLAGS = $(CFLAGS)
 # shared libs to include
-LDFLAGS = -lpthread -lm -lrt -lev #-lbmbedtls -lmbedx509 -lmbedcrypto
+LDFLAGS = -lpthread -lm -lrt #-lev -lbmbedtls -lmbedx509 -lmbedcrypto
 
 EXCLUDE_C_SRCS =AMCArp.c AMCMbedTLSTools.c AMCLibeventTool.c AMCLibevTools.c AMCBinSearchTree_Static.c AMCRandom.c
 EXCLUDE_CPP_SRCS =#
