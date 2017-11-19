@@ -963,7 +963,7 @@ void AMCDataDump(const void *pData, const size_t size)
 	const uint8_t *data = pData;
 
 	printf ("---------------------------------------------------------------------------\n");
-	printf ("Base: 0x%08lx, length %d(0x%04x)\n", (unsigned long)(data), size, size);
+	printf ("Base: 0x%08lx, length %d(0x%04x)\n", (unsigned long)(data), (int)size, (unsigned)size);
 	printf ("----  +0 +1 +2 +3 +4 +5 +6 +7  +8 +9 +A +B +C +D +E +F    01234567 89ABCDEF\n");
 //	printf ("---------------------------------------------------------------------------\n");
 	
@@ -1000,7 +1000,7 @@ void AMCDataDump(const void *pData, const size_t size)
 			}
 		}
 
-		printf ("%04X: %s   %s\n", tmp, lineString, linechar);
+		printf ("%04X: %s   %s\n", (unsigned)tmp, lineString, linechar);
 	}
 
 	/* last line */
@@ -1048,7 +1048,7 @@ void AMCDataDump(const void *pData, const size_t size)
 			}
 		}
 #endif
-		printf ("%04X: %s   %s\n", tmp, lineString, linechar);
+		printf ("%04X: %s   %s\n", (unsigned)tmp, lineString, linechar);
 	}
 	
 	printf ("---------------------------------------------------------------------------\n");
@@ -1211,9 +1211,9 @@ ssize_t getSystemMsgmax(void)
 	}
 
 #if ((OS_TYPE_IPHONE == CFG_OS_TYPE) || (OS_TYPE_MAC_OS_X == CFG_OS_TYPE))
-	fscanf(procFile, "%ld", &msgmax);
+	fscanf(procFile, "%ld", (long *)(&msgmax));
 #else
-	fscanf(procFile, "%d", &msgmax);
+	fscanf(procFile, "%d", (int *)(&msgmax));
 #endif
 
 	fclose(procFile);
@@ -1240,9 +1240,9 @@ ssize_t getSystemMsgmnb(void)
 	}
 	
 #if ((OS_TYPE_IPHONE == CFG_OS_TYPE) || (OS_TYPE_MAC_OS_X == CFG_OS_TYPE))
-		fscanf(procFile, "%ld", &msgmnb);
+	fscanf(procFile, "%ld", (long *)(&msgmnb));
 #else
-	fscanf(procFile, "%d", &msgmnb);
+	fscanf(procFile, "%d", (int *)(&msgmnb));
 #endif
 
 	fclose(procFile);

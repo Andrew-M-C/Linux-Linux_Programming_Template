@@ -96,20 +96,13 @@
 #define	CFG_OS_TYPE		OS_TYPE_LINUX
 #endif
 
-/*******************************************************
- * software information
- */
-#define	CFG_SOFTWARE_NAME_STR		"(no name)"
-#define	CFG_SOFTWARE_DISCRIPT_STR	"An application to contruct thread pool tool"
-#define	CFG_SOFTWARE_VER_STR		"0.0.1"
-#define	CFG_AUTHOR_STR		"Andrew Chang"
-
 
 /*******************************************************
  * library config
  */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-
+#endif
 
 /* macros that should only be defined once finished */
 /* pre-instructions below should be safe */
