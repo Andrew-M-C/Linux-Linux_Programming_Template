@@ -32,7 +32,21 @@ extern "C" {
 #define	CFG_AUTHOR_STR		"Andrew Chang"
 
 
-extern "C"  int asm_swap(unsigned long *pValA, unsigned long *pValB);
+extern "C" void asm_invoke_func(void *pFunc);
+static void _func_A();
+static void _func_B();
+
+static void _func_test_invoke()
+{
+    AMCPrintf("test asm");
+    return;
+}
+
+static void _c_invoke_func(void (*pFunc)(void))
+{
+    pFunc();
+    return;
+}
 
 
 static void _func_A()
@@ -71,16 +85,9 @@ static int _true_main(int argc, char* argv[])
 #error Upsupported CPU archetecture.
 #endif
 
-    unsigned long valA = 111;
-    unsigned long valB = 888;
-
-    AMCPrintf("valA = %lu", valA);
-    AMCPrintf("valB = %lu", valB);
-
-    asm_swap(&valA, &valB);
-
-    AMCPrintf("valA = %lu", valA);
-    AMCPrintf("valB = %lu", valB);
+    AMCPrintf("sizeof(void*) = %u", (unsigned)sizeof(void*));
+    _c_invoke_func(_func_test_invoke);
+    asm_invoke_func((void*)_func_test_invoke);
 
 	/****/
 	/* ENDS */

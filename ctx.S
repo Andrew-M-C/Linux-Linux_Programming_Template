@@ -8,26 +8,26 @@
 ##
 	.text
 	.align 4
-	.globl asm_swap
-	.type asm_swap, @function
-asm_swap:
-	push %rbp
-	mov %rsp, %rbp
-	sub $0x20, %rsp
-	push %r12
-	push %r13
+	.globl asm_invoke_func
+	.type asm_invoke_func, @function
+asm_invoke_func:
+#	push %rbp
+#	mov %rsp, %rbp
+#	sub $0x20, %rsp
+#	push %r12
+#	push %r13
 
 # here is function code
-	mov (%rdi), %r12
-	mov (%rsi), %r13
-	mov %r13, (%rdi)
-	mov %r12, (%rsi)
+	
+#	mov %rbp, %rsp
+#	pop %rbp
+	jmp *%rdi
 
-	pop %r13
-	pop %r12
-	mov %rbp, %rsp
-	pop %rbp
-	ret
+#	pop %r13
+#	pop %r12
+#	mov %rbp, %rsp
+#	pop %rbp
+#	retq
 
 #elif defined(__i386__)
 #error i386 Upsupported
