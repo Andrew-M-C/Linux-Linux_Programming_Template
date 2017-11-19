@@ -5,10 +5,8 @@
 #define CFG_LIB_STDIN
 #define CFG_LIB_FILE
 #define CFG_LIB_ERRNO
-#define CFG_LIB_DAEMON
 #define CFG_LIB_SLEEP
-#define CFG_LIB_PID
-#define CFG_LIB_FORK
+#define CFG_LIB_MEM
 #define CFG_LIB_SIGNAL
 #include "AMCCommonLib.h"
 
@@ -21,120 +19,60 @@
 #define	CFG_SOFTWARE_VER_STR		"0.0.1"
 #define	CFG_AUTHOR_STR		"Andrew Chang"
 
-#include "AMCCpuUsage.h"
-
-#define _TO_PTR(value)		((void *)(value))
-
-/*--------------------------------------------------*/
-static void _remove_new_line_char(char *line)
-{
-	BOOL isOK = FALSE;
-
-	for (isOK = FALSE; FALSE == isOK; line++)
-	{
-		switch(*line)
-		{
-			case '\r':
-			case '\n':
-				*line = '\0';
-				isOK = TRUE;
-				break;
-			case '\0':
-				isOK = TRUE;
-				break;
-			default:
-				break;
-		}
-	}
-
-	return;
-}
-
-
-/*--------------------------------------------------*/
-static void _try_fork()
-{
-	static int count = 0;
-	pid_t pid = 0;
-
-	pid = vfork();
-	switch(pid)
-	{
-		case PID_FAIL:
-			AMCPrintErr("Failed to fork: %s");
-			break;
-		case PID_CHILD:
-			count ++;
-			pid = getpid();
-			AMCPrintf("Child pid: %d, count: %d", (int)pid, count);
-			exit(0);
-			break;
-		default:
-			AMCPrintf("Parent pid: %d", (int)pid);
-			break;
-	}
-
-	return;
-}
-
-
 
 /**********/
 /* main */
-#define _TEST_ERROR_AND_DO(error, op)	do{\
-		if (0 == error) { \
-			error = op; \
-		} \
-	}while(0)
 static int trueMain(int argc, char* argv[])
 {
-	size_t lineCap = 1024;
-	char *line = malloc(lineCap);
-	ssize_t lineSize = 0;
-	char input = '\0';
-	BOOL shouldExit = FALSE;
+	int retryTimes = 5;
+	sigset_t newMask, oldMask, pendMask;
+	int callStat = 0;
 
-	signal(SIGCHLD, SIG_IGN);
+	sigemptyset(&newMask);
+	sigemptyset(&oldMask);
+	sigemptyset(&pendMask);
 
-	AMCPrintf("Parent pid: %d", (int)getpid());
-
-	if (NULL == line) {
-		AMCPrintErr("Cannot allocate buffer: %s", strerror(errno));
-	}
-
-	while(FALSE == shouldExit)
+	if (SIG_ERR == signal(SIGQUIT, SIG_IGN))
 	{
-		AMCPrintf("Please input option:");
-		
-		lineSize = getline(&line, &lineCap, stdin);
-		if (lineSize < 0)
-		{
-			AMCPrintErr("Failed to getline: %s", strerror(errno));
-			shouldExit = TRUE;
-		}
-		else if (0 == lineSize)
-		{
-			AMCPrintf("Exit");
-			shouldExit = TRUE;
-		}
-		/* Handle option */
-		else
-		{
-			_remove_new_line_char(line);
-			AMCPrintf("Get line: %s", line);
-			_try_fork();
-		}
+		AMCPrintErr("Failed in signal(): %s", strerror(errno));
+		goto END;
 	}
 
+	sigaddset(&newMask, SIGQUIT);
 
-	AMCPrintf("Get char: %c", input);
-
-	if (line)
+	for (/**/; retryTimes > 0; retryTimes --)
 	{
-		free(line);
-		line = NULL;
+		callStat = sigprocmask(SIG_BLOCK, &newMask, &oldMask);
+		if (callStat < 0) {
+			AMCPrintErr("Failed in sigprocmask(): %s", strerror(errno));
+			goto END;
+		}
+
+		AMCPrintf("Sleeping starts");
+		sleep(5);
+		AMCPrintf("Sleeping stops");
+
+		callStat = sigpending(&pendMask);
+		if (callStat < 0) {
+			AMCPrintErr("Failed in sigpending(): %s", strerror(errno));
+			goto END;
+		}
+
+		if (sigismember(&pendMask, SIGQUIT)) {
+			AMCPrintf("Signal SIGQUIT pending");
+		}
+
+		callStat = sigprocmask(SIG_SETMASK, &oldMask, NULL);
+		if (callStat < 0) {
+			AMCPrintErr("Failed in sigprocmask(): %s", strerror(errno));
+			goto END;
+		}
 	}
-	return 0;
+	
+	/****/
+	/* ENDS */
+END:
+	return (0 == callStat) ? 0 : -1;
 }
 
 
