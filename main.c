@@ -2,11 +2,14 @@
 
 #define DEBUG
 #define CFG_LIB_STDOUT
+#define CFG_LIB_STDIN
 #define CFG_LIB_FILE
 #define CFG_LIB_ERRNO
 #define CFG_LIB_DAEMON
 #define CFG_LIB_SLEEP
 #define CFG_LIB_PID
+#define CFG_LIB_FORK
+#define CFG_LIB_SIGNAL
 #include "AMCCommonLib.h"
 
 
@@ -22,6 +25,59 @@
 
 #define _TO_PTR(value)		((void *)(value))
 
+/*--------------------------------------------------*/
+static void _remove_new_line_char(char *line)
+{
+	BOOL isOK = FALSE;
+
+	for (isOK = FALSE; FALSE == isOK; line++)
+	{
+		switch(*line)
+		{
+			case '\r':
+			case '\n':
+				*line = '\0';
+				isOK = TRUE;
+				break;
+			case '\0':
+				isOK = TRUE;
+				break;
+			default:
+				break;
+		}
+	}
+
+	return;
+}
+
+
+/*--------------------------------------------------*/
+static void _try_fork()
+{
+	static int count = 0;
+	pid_t pid = 0;
+
+	pid = vfork();
+	switch(pid)
+	{
+		case PID_FAIL:
+			AMCPrintErr("Failed to fork: %s");
+			break;
+		case PID_CHILD:
+			count ++;
+			pid = getpid();
+			AMCPrintf("Child pid: %d, count: %d", (int)pid, count);
+			exit(0);
+			break;
+		default:
+			AMCPrintf("Parent pid: %d", (int)pid);
+			break;
+	}
+
+	return;
+}
+
+
 
 /**********/
 /* main */
@@ -32,47 +88,51 @@
 	}while(0)
 static int trueMain(int argc, char* argv[])
 {
-	if (argc < 2) {
-		AMCPrintf("No pid specified");
-		return -1;
+	size_t lineCap = 1024;
+	char *line = malloc(lineCap);
+	ssize_t lineSize = 0;
+	char input = '\0';
+	BOOL shouldExit = FALSE;
+
+	signal(SIGCHLD, SIG_IGN);
+
+	AMCPrintf("Parent pid: %d", (int)getpid());
+
+	if (NULL == line) {
+		AMCPrintErr("Cannot allocate buffer: %s", strerror(errno));
 	}
 
-	AMCCpuUsageErrno_st error = {0, 0};
-	AMCCpuUsage_st *usage = NULL;
-	pid_t pid = strtol(argv[1], NULL, 10);
-	AMCPrintf("Get pid %d", pid);
-
-	int sleepSec = 1;
-	if (argc >= 3) {
-		sleepSec = strtol(argv[2], NULL, 10);
-		if (sleepSec <= 0) {
-			sleepSec = 1;
-		}
-	}
-
-	usage = AMCCpuUsage_New(pid, &error);
-	while(0 == error.obj_error)
+	while(FALSE == shouldExit)
 	{
-		error = AMCCpuUsage_Update(usage);
-
-		if (0 == error.obj_error) {
-			AMCPrintf("[%d] CPU %ld%%", pid, AMCCpuUsage_GetCpuUsagePercent(usage));
-			AMCPrintf("[%d] CPU %.03lf%%", pid, AMCCpuUsage_GetCpuUsageDouble(usage) * 100.0);
+		AMCPrintf("Please input option:");
+		
+		lineSize = getline(&line, &lineCap, stdin);
+		if (lineSize < 0)
+		{
+			AMCPrintErr("Failed to getline: %s", strerror(errno));
+			shouldExit = TRUE;
 		}
-	
-		sleep(sleepSec);
+		else if (0 == lineSize)
+		{
+			AMCPrintf("Exit");
+			shouldExit = TRUE;
+		}
+		/* Handle option */
+		else
+		{
+			_remove_new_line_char(line);
+			AMCPrintf("Get line: %s", line);
+			_try_fork();
+		}
 	}
-	
-	
-	
-	/****/
-	/* ENDS */
-	if (usage) {
-		AMCCpuUsage_Free(usage);
-		usage= NULL;
-	}
-	if (0 != error.obj_error) {
-		AMCPrintf("Error: %d", error.obj_error);
+
+
+	AMCPrintf("Get char: %c", input);
+
+	if (line)
+	{
+		free(line);
+		line = NULL;
 	}
 	return 0;
 }

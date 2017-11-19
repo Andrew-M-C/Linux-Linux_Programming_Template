@@ -469,6 +469,8 @@ ssize_t errPrintf(const char *format, ...);
 extern int scanf(const char *format, ...);
 extern int sscanf(const char *str, const char *format, ...);
 extern char *gets(char *s);
+extern int getchar(void);
+extern ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 #endif
 #endif
 
