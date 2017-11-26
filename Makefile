@@ -96,7 +96,7 @@ $(C_OBJS): $(C_OBJS:.o=.c)
 	@rm -f $*.d.tmp 
 
 $(ASM_OBJS): $(ASM_OBJS:.o=.S)
-	$(CC) -c $<
+	$(CC) -c $*.S
 
 
 $(PROG_NAME): $(C_OBJS) $(CPP_OBJS) $(ASM_OBJS)

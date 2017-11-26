@@ -69,6 +69,10 @@
 #ifndef	_AMC_COMMON_LIB
 #define	_AMC_COMMON_LIB
 
+#if defined (__cplusplus)
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 /* This is a common file */
@@ -491,7 +495,7 @@ extern int usleep (__useconds_t __useconds);
 #ifdef	CFG_LIB_STRING
 #include <string.h>
 #include <ctype.h>
-#ifdef	CFG_DECLARE_LIB_FUNC
+#ifdef  CFG_DECLARE_LIB_FUNC
 extern char *strcpy(char *dest, const char *src);
 extern char *strncpy(char *dest, const char *src, size_t n);
 extern size_t strlen(const char *s);
@@ -1432,6 +1436,10 @@ void vsyslog(int priority, const char *format, va_list ap);
 #endif
 #endif	/* endof CFG_LIB_SYSLOG */
 
+
+#if defined (__cplusplus)
+}
+#endif
 
 #endif	/* end of file */
 
